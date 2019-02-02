@@ -210,7 +210,7 @@ void mainThread(LPVOID hModule)
 	Sleep(15000);
 	
 	pCRMP->getInfo()->showGameText("~r~vk.com/~b~cheatscrmp~y~", 5000, 5);
-	pCRMP->getChat()->addMessageToChat(0x339933, "Project Armageddon v2");
+	pCRMP->getChat()->addMessageToChat(0x339933, "Project Armageddon v3");
 	pCRMP->getChat()->addMessageToChat(0x339933, "Разработчик: {00FF66}Yarik124 {FF0000}| {339933}Группа: {00FF66}vk.com/cheatscrmp ");
 
 	CreateThread(NULL, NULL, check_online, NULL, NULL, NULL);

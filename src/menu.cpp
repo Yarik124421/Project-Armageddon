@@ -171,9 +171,9 @@ void ImGui_Menu_Draw()
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowMinSize, ImVec2(180.0f, 250.0f));
 	ImGui::SetNextWindowSize(ImVec2(240.0f, 350.0f), ImGuiCond_Once);
 	ImGui::SetNextWindowPos(ImVec2(300.0f, 350.0f), ImGuiCond_Once);
-	std::string temp = "Project Armageddon v2 | Yarik124";
+	std::string temp = "Project Armageddon v3 | Yarik124";
 	if(trainer.online > 0)
-		temp = "Project Armageddon v2 | Online: " + std::to_string(trainer.online);
+		temp = "Project Armageddon v3 | Online: " + std::to_string(trainer.online);
 
 	if (ImGui::Begin(cp1251_to_utf8(temp).c_str(), &menu.active, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_ShowBorders))
 	{

@@ -16,7 +16,7 @@
 #	define CRMP_MODULE_NAME			"san_andreas_multiplayer.dll"
 #endif
 
-#define	TRAINER_VERSION				9
+#define IMGUI_DEFINE_MATH_OPERATORS
 //#define NamalskTeam
 //#define PATH_TO_CHECKING_SCRIPT		"https://litehack.ru/crmp_trainer/version.php"
 //#define PATH_TO_OFFICIAL_THREAD		"https://litehack.ru/threads/3275/"
@@ -124,8 +124,14 @@
 using namespace std;
 
 // ImGui
-#include "ImGui\imgui.h"
-#include "ImGui\imgui_impl_dx9.h"
+#include "ImGui/imgui.h"
+#include "ImGui/imgui_impl_dx9.h"
+#include "ImGui/imgui_impl_win32.h"
+#define DIRECTINPUT_VERSION 0x0800
+#include <dinput.h>
+#include <tchar.h>
+#include <d3d9.h>
+//extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND wnd, UINT umsg, WPARAM wparam, LPARAM lparam);
 
 // d3d9
 #include "d3d9\d3dhook.h"

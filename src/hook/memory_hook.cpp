@@ -373,13 +373,6 @@ LRESULT WINAPI dispatch_message_fn(const MSG *lpmsg)
 	return DispatchMessage(lpmsg);
 }
 
-typedef struct DIMOUSESTATE2 {
-	LONG lX;
-	LONG lY;
-	LONG lZ;
-	BYTE rgbButtons[4];
-} DIMOUSESTATE, *LPDIMOUSESTATE;
-
 unsigned int get_mouse_state_fn(DIMOUSESTATE2* state)
 {
 	POINT cursor_point;

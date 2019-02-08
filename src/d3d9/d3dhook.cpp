@@ -47,6 +47,7 @@ void CD3DHook::InstallHook()
 
 	orig_Reset =	hook::func((uint32_t)&vTable[eDirectXVtable::VTABLE_Reset], Reset);
 	orig_Present =	hook::func((uint32_t)&vTable[eDirectXVtable::VTABLE_Present], Present);
+	orig_End =		hook::func((uint32_t)&vTable[eDirectXVtable::VTABLE_EndScene], End);
 }
 ImVec2 window_pos;
 ImVec2 window_size;
@@ -239,7 +240,18 @@ void CD3DHook::InitRender(IDirect3DDevice9 *pDevice)
 		pD3DFontFix->Initialize(pDevice);
 		pD3DFontNick->Initialize(pDevice);
 		pD3DFontBig->Initialize(pDevice);
-
+		ImGui::CreateContext();
+		ImGuiIO& io = ImGui::GetIO();
+		ImGuiStyle& style = ImGui::GetStyle();
+		io.IniFilename = NULL;
+		io.DeltaTime = 1.0f / 60.0f;
+		//ImFont* pFont = io.Fonts->AddFontFromFileTTF("C:\\Windows\\Fonts\\framd.ttf", 15);
+		SetCursor(io.MouseDrawCursor ? NULL : LoadCursor(NULL, IDC_ARROW));
+		io.Fonts->AddFontDefault();
+		style.AntiAliasedLines = false;
+		style.AntiAliasedFill = false;
+		style.WindowBorderSize = 0.0f;
+		ImGui_ImplWin32_Init(GetActiveWindow());
 		ImGui_ImplDX9_Init(pPresentParam->hDeviceWindow, pDevice);
 		ImGui_ImplDX9_CreateDeviceObjects();
 
@@ -280,26 +292,28 @@ HRESULT CALLBACK CD3DHook::Present(IDirect3DDevice9 *pDevice, const RECT *pSrcRe
 
 		if (pD3DHook->bDrawingAllowed)
 		{
-			//IDirect3DTexture9		*tOL_LogoPNG;
-			//ID3DXSprite				*sOL_LogoPNG;
-			//char filename[512];
-			//_snprintf(filename, sizeof(filename), "%s\\" "OverLight_Logo.png");
-			//D3DXCreateTextureFromFile(pDevice, filename, &tOL_LogoPNG);//Logo set
-			//D3DXCreateSprite(pDevice, &sOL_LogoPNG);
+			//SaveState(pDevice);
 			ImGui_ImplDX9_NewFrame();
+			ImGui_ImplWin32_NewFrame();
 			ImGui_Menu_Draw();
 			ImGui_CM_Draw();
-			pD3DHook->Render();
-			//if (menu.bottom_bar && isWork) func_bottom(window_pos, window_size);
+			ImGui::EndFrame();
 			ImGui::Render();
+			ImGui_ImplDX9_RenderDrawLists(ImGui::GetDrawData());
+			//RestoreState(pDevice);
+			pD3DHook->Render();
+
 		}
 		
 		if ((menu.active) && pCRMP->getMisc()->iCursorMode == CURSORMODE_DISABLE)
 			pCRMP->getMisc()->toggleSAMPCursor(/*trainer.imcursor*/ ImGui::GetIO().MouseDrawCursor = true);
+		if ((!menu.active) && pCRMP->getMisc()->iCursorMode == CURSORMODE_DISABLE)
+			pCRMP->getMisc()->toggleSAMPCursor(/*trainer.imcursor*/ ImGui::GetIO().MouseDrawCursor = false);
 		
 		if (isKeyPressed(ini.key.menu)) {
 			save_all_settings();
-			/*trainer.imcursor*/ ImGui::GetIO().MouseDrawCursor = (menu.active ^= true);
+			menu.active = !menu.active;
+			/*trainer.imcursor*/ ImGui::GetIO().MouseDrawCursor = (menu.active);
 			pCRMP->getMisc()->toggleSAMPCursor(menu.active);
 		}
 		if (pCRMP->Init()) call_functions(g_timeDiff);
@@ -307,6 +321,11 @@ HRESULT CALLBACK CD3DHook::Present(IDirect3DDevice9 *pDevice, const RECT *pSrcRe
 	time_last = time_get();
 		
 	return pD3DHook->orig_Present(pDevice, pSrcRect, pDestRect, hDestWindow, pDirtyRegion);
+}
+
+HRESULT CALLBACK CD3DHook::End(IDirect3DDevice9 * pDevice)
+{
+	return pD3DHook->orig_End(pDevice);
 }
 
 HRESULT CALLBACK CD3DHook::Reset(IDirect3DDevice9 *pDevice, D3DPRESENT_PARAMETERS *pPresentParams)

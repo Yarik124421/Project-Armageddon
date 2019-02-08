@@ -90,7 +90,7 @@ DWORD WINAPI check_ips(LPVOID)
 void mainThread(LPVOID hModule)
 { 
 	hThisModule = static_cast<HMODULE>(hModule);
-
+	//ImGui::CreateContext();
 	std::string path(szWorkingDirectory);
 	path.append("Armageddon.ini");
 	strnset(szIniFileName, 0, MAX_PATH);

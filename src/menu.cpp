@@ -175,7 +175,7 @@ void ImGui_Menu_Draw()
 	if(trainer.online > 0)
 		temp = "Project Armageddon v3 | Online: " + std::to_string(trainer.online);
 
-	if (ImGui::Begin(cp1251_to_utf8(temp).c_str(), &menu.active, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_ShowBorders))
+	if (ImGui::Begin(cp1251_to_utf8(temp).c_str(), &menu.active, ImGuiWindowFlags_NoCollapse))
 	{
 		float fItemWidth = ImGui::GetWindowWidth() - 10.0f;
 		if (ImGui::GetScrollMaxY() > 5.0f)
@@ -357,7 +357,7 @@ void ImGui_CM_Draw()
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowMinSize, ImVec2(180.0f, 250.0f));
 	ImGui::SetNextWindowSize(ImVec2(240.0f, 85.0f), ImGuiCond_Once);
 	ImGui::SetNextWindowPos(ImVec2(700.0f, 350.0f), ImGuiCond_Once);
-	if (ImGui::Begin(cp1251_to_utf8("Coord-master").c_str(), &menu.cm_menu, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_ShowBorders))
+	if (ImGui::Begin(cp1251_to_utf8("Coord-master").c_str(), &menu.cm_menu, ImGuiWindowFlags_NoCollapse))
 	{
 		ImGui::Spacing();
 		ImGui::Separator();

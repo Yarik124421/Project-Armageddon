@@ -317,18 +317,11 @@
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="ImGui\imgui.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debag|Win32'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="ImGui\imgui_draw.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debag|Win32'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="ImGui\imgui_impl_dx9.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debag|Win32'">Use</PrecompiledHeader>
-    </ClCompile>
+    <ClCompile Include="ImGui\imgui.cpp" />
+    <ClCompile Include="ImGui\imgui_draw.cpp" />
+    <ClCompile Include="ImGui\imgui_impl_dx9.cpp" />
+    <ClCompile Include="ImGui\imgui_impl_win32.cpp" />
+    <ClCompile Include="ImGui\imgui_widgets.cpp" />
     <ClCompile Include="INI.cpp" />
     <ClCompile Include="samp_cmds.cpp" />
     <ClCompile Include="RakNet\BitStream.cpp">
@@ -864,10 +857,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ImGui\imconfig.h" />
-    <ClInclude Include="ImGui\imgui.h" />
-    <ClInclude Include="ImGui\imgui_impl_dx9.h" />
-    <ClInclude Include="ImGui\imgui_internal.h" />
     <ClInclude Include="game_sa\C3DMarkerSA.h" />
     <ClInclude Include="game_sa\C3DMarkersSA.h" />
     <ClInclude Include="game_sa\CAERadioTrackManagerSA.h" />
@@ -1112,6 +1101,14 @@
     <ClInclude Include="game_sa\TaskSecondarySA.h" />
     <ClInclude Include="gta_func.h" />
     <ClInclude Include="gta_struct.h" />
+    <ClInclude Include="ImGui\imconfig.h" />
+    <ClInclude Include="ImGui\imgui.h" />
+    <ClInclude Include="ImGui\imgui_impl_dx9.h" />
+    <ClInclude Include="ImGui\imgui_impl_win32.h" />
+    <ClInclude Include="ImGui\imgui_internal.h" />
+    <ClInclude Include="ImGui\imstb_rectpack.h" />
+    <ClInclude Include="ImGui\imstb_textedit.h" />
+    <ClInclude Include="ImGui\imstb_truetype.h" />
     <ClInclude Include="INI.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="misc.h" />

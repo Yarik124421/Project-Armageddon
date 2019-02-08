@@ -400,6 +400,12 @@
       <Filter>RakNet</Filter>
     </ClCompile>
     <ClCompile Include="samp_cmds.cpp" />
+    <ClCompile Include="hook\memory_hook.cpp">
+      <Filter>hook</Filter>
+    </ClCompile>
+    <ClCompile Include="INI.cpp">
+      <Filter>ini_file</Filter>
+    </ClCompile>
     <ClCompile Include="ImGui\imgui.cpp">
       <Filter>ImGui</Filter>
     </ClCompile>
@@ -409,11 +415,11 @@
     <ClCompile Include="ImGui\imgui_impl_dx9.cpp">
       <Filter>ImGui</Filter>
     </ClCompile>
-    <ClCompile Include="hook\memory_hook.cpp">
-      <Filter>hook</Filter>
+    <ClCompile Include="ImGui\imgui_impl_win32.cpp">
+      <Filter>ImGui</Filter>
     </ClCompile>
-    <ClCompile Include="INI.cpp">
-      <Filter>ini_file</Filter>
+    <ClCompile Include="ImGui\imgui_widgets.cpp">
+      <Filter>ImGui</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1173,18 +1179,6 @@
       <Filter>RakNet</Filter>
     </ClInclude>
     <ClInclude Include="samp_cmds.h" />
-    <ClInclude Include="ImGui\imconfig.h">
-      <Filter>ImGui</Filter>
-    </ClInclude>
-    <ClInclude Include="ImGui\imgui.h">
-      <Filter>ImGui</Filter>
-    </ClInclude>
-    <ClInclude Include="ImGui\imgui_impl_dx9.h">
-      <Filter>ImGui</Filter>
-    </ClInclude>
-    <ClInclude Include="ImGui\imgui_internal.h">
-      <Filter>ImGui</Filter>
-    </ClInclude>
     <ClInclude Include="hook\memory_hook.h">
       <Filter>hook</Filter>
     </ClInclude>
@@ -1194,6 +1188,30 @@
     </ClInclude>
     <ClInclude Include="INI.h">
       <Filter>ini_file</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGui\imgui.h">
+      <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGui\imgui_impl_dx9.h">
+      <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGui\imgui_impl_win32.h">
+      <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGui\imgui_internal.h">
+      <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGui\imstb_rectpack.h">
+      <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGui\imstb_textedit.h">
+      <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGui\imstb_truetype.h">
+      <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGui\imconfig.h">
+      <Filter>ImGui</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

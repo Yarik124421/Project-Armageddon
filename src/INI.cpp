@@ -131,7 +131,8 @@ void create_ini_file()
 {
 	Config->SetValue("Keys", "enable_menu", std::make_unique<ConfigValue>(113, CONFIG_INT));
 	Config->SetValue("Keys", "dialoghider", std::make_unique<ConfigValue>(222, CONFIG_INT));
-	Config->SetValue("Keys", "good_mode", std::make_unique<ConfigValue>(45, CONFIG_INT));
+	Config->SetValue("Keys", "god_mode_veh", std::make_unique<ConfigValue>(0, CONFIG_INT));
+	Config->SetValue("Keys", "god_mode_ped", std::make_unique<ConfigValue>(0, CONFIG_INT));
 	Config->SetValue("Keys", "air_break", std::make_unique<ConfigValue>(161, CONFIG_INT));
 	Config->SetValue("Keys", "reconnect", std::make_unique<ConfigValue>(48, CONFIG_INT));
 	Config->SetValue("Keys", "skin_aimbot", std::make_unique<ConfigValue>(90, CONFIG_INT));
@@ -179,8 +180,6 @@ void create_ini_file()
 	Config->SetValue("StartUP", "enable_ping_aim", std::make_unique<ConfigValue>(0, CONFIG_INT));
 	Config->SetValue("StartUP", "enable_play_col", std::make_unique<ConfigValue>(0, CONFIG_INT));
 	Config->SetValue("StartUP", "enable_pluscbug", std::make_unique<ConfigValue>(0, CONFIG_INT));
-	Config->SetValue("StartUP", "enable_pulsecolor", std::make_unique<ConfigValue>(0, CONFIG_INT));
-	Config->SetValue("StartUP", "enable_pulsewheels", std::make_unique<ConfigValue>(0, CONFIG_INT));
 	Config->SetValue("StartUP", "enable_render.labels", std::make_unique<ConfigValue>(0, CONFIG_INT));
 	Config->SetValue("StartUP", "enable_render.player", std::make_unique<ConfigValue>(0, CONFIG_INT));
 	Config->SetValue("StartUP", "enable_render.vehicle", std::make_unique<ConfigValue>(0, CONFIG_INT));
@@ -206,7 +205,8 @@ void get_ini_file_settings()
 	ini.key.click_warp = Config->GetIntValue("Keys", "click_warp");
 	ini.key.dialoghider = Config->GetIntValue("Keys", "dialoghider");
 	ini.key.fast_exit = Config->GetIntValue("Keys", "fast_exit");
-	ini.key.good_mode = Config->GetIntValue("Keys", "good_mode");
+	ini.key.god_mode_veh = Config->GetIntValue("Keys", "god_mode_veh");
+	ini.key.god_mode_ped = Config->GetIntValue("Keys", "god_mode_ped");
 	ini.key.menu = Config->GetIntValue("Keys", "enable_menu");
 	ini.key.ping_aimbot = Config->GetIntValue("Keys", "ping_aimbot");
 	ini.key.reconnect = Config->GetIntValue("Keys", "reconnect");
@@ -253,8 +253,6 @@ void get_ini_file_settings()
 	menu.ping_aim = Config->GetIntValue("StartUP", "enable_ping_aim");
 	menu.play_col = Config->GetIntValue("StartUP", "enable_play_col");
 	menu.pluscbug = Config->GetIntValue("StartUP", "enable_pluscbug");
-	menu.pulsecolor = Config->GetIntValue("StartUP", "enable_pulsecolor");
-	menu.pulsewheels = Config->GetIntValue("StartUP", "enable_pulsewheels");
 	menu.render.labels = Config->GetIntValue("StartUP", "enable_render.labels");
 	menu.render.player = Config->GetIntValue("StartUP", "enable_render.player");
 	menu.render.vehicle = Config->GetIntValue("StartUP", "enable_render.vehicle");

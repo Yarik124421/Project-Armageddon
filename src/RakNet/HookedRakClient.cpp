@@ -62,9 +62,11 @@ bool HookedRakClientInterface::Send(BitStream * bitStream, PacketPriority priori
 		if (ini.patch[i].id == packetId && ini.patch[i].enabled && ini.patch[i].type == OUTCOMING_PACKET)
 			return false;
 	}
-
+	if (menu.tr_lock && (packetId == ID_PLAYER_SYNC || packetId == ID_VEHICLE_SYNC))
+		return false;
 	if (packetId == ID_AIM_SYNC)
 	{
+		
 		stAimData OutgoingAimData;
 
 		bitStream->ResetReadPointer();
@@ -92,7 +94,7 @@ bool HookedRakClientInterface::Send(BitStream * bitStream, PacketPriority priori
 	}
 	if (packetId == ID_PLAYER_SYNC)
 	{
-
+		if (menu.fakeafk) return false;
 		stOnFootData OutgoingOnFootData;
 
 		bitStream->ResetReadPointer();
@@ -122,11 +124,11 @@ bool HookedRakClientInterface::Send(BitStream * bitStream, PacketPriority priori
 			OutgoingOnFootData.fMoveSpeed[1] *= random::_float(-10.0f, 10.0f);
 		}
 
-		if (menu.coordmaster)
+		if (menu.coordmaster || menu.air_break)
 		{
-			OutgoingOnFootData.fMoveSpeed[0] = random::_float(-0.5f, 0.5f);
-			OutgoingOnFootData.fMoveSpeed[1] = random::_float(-0.5f, 0.5f);
-			OutgoingOnFootData.fMoveSpeed[2] = random::_float(-0.5f, 0.5f);
+			OutgoingOnFootData.fMoveSpeed[0] = random::_float(-0.2f, 0.2f);
+			OutgoingOnFootData.fMoveSpeed[1] = random::_float(-0.2f, 0.2f);
+			OutgoingOnFootData.fMoveSpeed[2] = random::_float(-0.1f, 0.1f);
 		}
 
 		if (menu.slapper)
@@ -168,6 +170,27 @@ bool HookedRakClientInterface::Send(BitStream * bitStream, PacketPriority priori
 		bitStream->Reset();
 		bitStream->Write((BYTE)ID_PLAYER_SYNC);
 		bitStream->Write((PCHAR)&OutgoingOnFootData, sizeof(stOnFootData));
+	}
+	if (packetId == ID_VEHICLE_SYNC)
+	{
+		stInCarData OutgoingInCarData;
+
+		bitStream->ResetReadPointer();
+		bitStream->Read(packetId);
+		bitStream->Read((PCHAR)&OutgoingInCarData, sizeof(stInCarData));
+		//if (menu.carshot)
+		//{
+		//	pCRMP->getChat()->addMessageToChat(0xFFFFFF, "%0.2f %0.2f %0.2f", OutgoingInCarData.fMoveSpeed[0], OutgoingInCarData.fMoveSpeed[1], OutgoingInCarData.fMoveSpeed[2]);
+		//}
+		if (menu.pizdarvanka) {
+			OutgoingInCarData.fMoveSpeed[0] += random::get(-10.0f, 10.0f);
+			OutgoingInCarData.fMoveSpeed[1] += random::get(-10.0f, 10.0f);
+		}
+
+		bitStream->Reset();
+		bitStream->Write((BYTE)ID_VEHICLE_SYNC);
+		bitStream->Write((PCHAR)&OutgoingInCarData, sizeof(stInCarData));
+
 	}
 	if (menu.carshotbypass && menu.carshot)
 		if (packetId == ID_VEHICLE_SYNC || packetId == ID_PASSENGER_SYNC) return false;
@@ -229,7 +252,7 @@ bool HookedRakClientInterface::Send(BitStream * bitStream, PacketPriority priori
 		bitStream->Read((PCHAR)&OutgoingInCarData, sizeof(stUnoccupiedData));
 
 		//pCRMP->getChat()->addMessageToChat(0xFFFFFF, "%i", OutgoingInCarData.byteSeatID);
-		if (menu.car_shooter && OutgoingInCarData.byteSeatID == 0) return false;
+		//if (menu.car_shooter && OutgoingInCarData.byteSeatID == 0) return false;
 
 		bitStream->Reset();
 		bitStream->Write((BYTE)ID_UNOCCUPIED_SYNC);

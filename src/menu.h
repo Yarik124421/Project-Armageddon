@@ -83,6 +83,7 @@ struct cheats
 	bool fps_unlimiter;
 	bool coordmaster;
 	bool cm_menu;
+	bool fakeafk;
 	
 	bool antifreeze;
 	bool pulsecolor;
@@ -125,6 +126,7 @@ struct cheats
 	bool pizdets;
 	bool pizda;
 	bool rollcrasher;
+	bool tr_lock;
 	struct render 
 	{
 		bool pickup;

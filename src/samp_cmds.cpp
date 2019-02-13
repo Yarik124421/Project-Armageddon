@@ -5,7 +5,12 @@
 */
 
 #include "main.h"
-
+uint16_t tr_pid = -1;
+bool tr_enabled = false;
+float tr_pos[3];
+float tr_spveh[3] = { 0.0f, -90.0f, 0.1f };
+float tr_spped[3] = { 0.0f, -50.0f, 0.1f };
+bool one = false;
 namespace cmd
 {
 
@@ -255,11 +260,15 @@ namespace cmd
 	}
 	void set_time(char *params)
 	{
-		pCRMP->getChat()->addMessageToChat(COLOR_MSG_ERROR, "Ошибка! Время должно быть от 0 до 23!");
+		int time = atoi(params);
+		if (time > 23 && time < 0)
+			return pCRMP->getChat()->addMessageToChat(COLOR_MSG_ERROR, "Ошибка! Время должно быть от 0 до 23!");
+		else
+			return pGame->GetClock()->Set(time, 0);
 	}
 	void set_health(char *params)
 	{
-		float health = stof(params);
+		float health = atof(params);
 		if (!strlen(params))
 			return pCRMP->getChat()->addMessageToChat(COLOR_MSG_ERROR, "Ошибка! Введите /.shp [Количество здоровья]!");
 		else if (health && health <= 100)
@@ -267,7 +276,7 @@ namespace cmd
 	}
 	void set_vehicle_hp(char *params)
 	{
-		float vehicle_hp = stof(params);
+		float vehicle_hp = atof(params);
 		if (!strlen(params))
 			return pCRMP->getChat()->addMessageToChat(COLOR_MSG_ERROR, "Ошибка! Введите /.svhp [Количество хп]!");
 		else if (vehicle_hp && vehicle_hp <= 1000)
@@ -337,6 +346,25 @@ namespace cmd
 		pCVehicle->SetMoveSpeed(&vecSpeed);
 
 	}
+	void tr(char *params)
+	{
+		if (tr_pid == atoi(params) || tr_pid < 0)
+		{
+			tr_enabled = false;
+			return pCRMP->getChat()->addMessageToChat(COLOR_MSG_ERROR, "Таранка выключена");
+		}
+		tr_pid = atoi(params);
+		CreateThread(NULL, NULL, taranka, NULL, NULL, NULL);
+		return pCRMP->getChat()->addMessageToChat(COLOR_MSG_SUCCESS, "Таранка включена");
+	}
+	void tr_one(char *params)
+	{
+		one = atoi(params);
+		return pCRMP->getChat()->addMessageToChat(COLOR_MSG_SUCCESS, "Режим изменен!");
+	}
+
+
+
 	//void go(char *param) 
 	//{
 	//	GTAfunc_PerformAnimation("PED", "run_civi", 20000, true, true, true, false, true, true, false);
@@ -366,7 +394,77 @@ namespace cmd
 		pCRMP->getChat()->addMessageToChat(COLOR_MSG_INFO, "/.delmsg [Номер строки(0-99)] - Удалить строку в чате");
 		pCRMP->getChat()->addMessageToChat(COLOR_MSG_INFO, "/.spec <ID Игрока / []> - Начать слежку за игроком");
 		pCRMP->getChat()->addMessageToChat(COLOR_MSG_INFO, "/.delcar [ID авто] - Удалить авто");
+		pCRMP->getChat()->addMessageToChat(COLOR_MSG_INFO, "/.tr [ID Игрока] - Таранка на игрока");
+		pCRMP->getChat()->addMessageToChat(COLOR_MSG_INFO, "/.tr_one [0 - постоянно / 1 - один раз] - Смена режима таранки");
 	}
+}
+
+DWORD WINAPI taranka(LPVOID)
+{
+	tr_enabled = true;
+	while (tr_enabled)
+	{
+		/*
+		if (!pCRMP->getPlayers()->isBadPlayer(iPlayerID))
+			{
+				actor_info *ainfo = pCRMP->getPlayers()->getGTAPed(iPlayerID);
+				if (isBadPtr_GTA_pPed(ainfo)) return true;*/
+		if (pCRMP->getPlayers()->pRemotePlayer[tr_pid] == NULL || pCRMP->getPlayers()->isBadPlayer(tr_pid))
+		{
+			tr_pid = -1;
+			tr_enabled = false;
+			pCRMP->getChat()->addMessageToChat(COLOR_MSG_ERROR, "Таранка выключена");
+			ExitThread(0);
+		}
+		actor_info *ainfo = pCRMP->getPlayers()->getGTAPed(tr_pid);
+		if (isBadPtr_GTA_pPed(ainfo))
+		{
+			tr_pid = -1;
+			tr_enabled = false;
+			pCRMP->getChat()->addMessageToChat(COLOR_MSG_ERROR, "Таранка выключена");
+			ExitThread(0);
+		}
+		if (trainer.state == CHEAT_STATE_VEHICLE)
+		{
+			vect3_copy(pCRMP->getPlayers()->pRemotePlayer[tr_pid]->pPlayerData->pSAMP_Actor->pGTA_Ped->base.m_CMatrix->vPos, tr_pos);
+			tr_pos[1] += 2.0f;
+			tr_pos[2] += 1.0f;
+			menu.tr_lock = true;
+			vehicle_info *info = vehicle_info_get(VEHICLE_SELF);
+			pCRMP->getRakClient()->SendFakeDriverSyncData(pCRMP->getPlayers()->pLocalPlayer->sCurrentVehicleID, tr_pos, info->hitpoints, tr_spveh);
+			Sleep(10);
+			if (pCRMP->getPlayers()->pRemotePlayer[tr_pid] != NULL)
+			vect3_copy(pCRMP->getPlayers()->pRemotePlayer[tr_pid]->pPlayerData->pSAMP_Actor->pGTA_Ped->base.m_CMatrix->vPos, tr_pos);
+			tr_pos[1] += 2.0f;
+			tr_pos[2] += 1.0f;
+			pCRMP->getRakClient()->SendFakeDriverSyncData(pCRMP->getPlayers()->pLocalPlayer->sCurrentVehicleID, tr_pos, info->hitpoints, tr_spveh);
+			Sleep(1000);
+			menu.tr_lock = false;
+		}
+		else if (trainer.state = CHEAT_STATE_ACTOR)
+		{
+			vect3_copy(pCRMP->getPlayers()->pRemotePlayer[tr_pid]->pPlayerData->pSAMP_Actor->pGTA_Ped->base.m_CMatrix->vPos, tr_pos);
+			tr_pos[1] += 3.0f;
+			tr_pos[2] += 1.0f;
+			menu.tr_lock = true;
+			actor_info *info = actor_info_get(ACTOR_SELF);
+			pCRMP->getRakClient()->SendFakeOnfootSyncData(tr_pos, info->hitpoints, tr_spped);
+			Sleep(10);
+			if (pCRMP->getPlayers()->pRemotePlayer[tr_pid] != NULL)
+			vect3_copy(pCRMP->getPlayers()->pRemotePlayer[tr_pid]->pPlayerData->pSAMP_Actor->pGTA_Ped->base.m_CMatrix->vPos, tr_pos);
+			tr_pos[1] += 3.0f;
+			tr_pos[2] += 1.0f;
+			menu.tr_lock = true;
+			pCRMP->getRakClient()->SendFakeOnfootSyncData(tr_pos, info->hitpoints, tr_spped);
+			Sleep(1000);
+			menu.tr_lock = false;
+		}
+		if (one) tr_enabled = false;
+	}
+	tr_pid = -1;
+	tr_enabled = false;
+	pCRMP->getChat()->addMessageToChat(COLOR_MSG_ERROR, "Таранка выключена");
+	ExitThread(0);
 }
 
 void registerSampCommand()
@@ -396,5 +494,7 @@ void registerSampCommand()
 	pCRMP->getInput()->addClientCommand(".delmsg", cmd::del_msg);
 	pCRMP->getInput()->addClientCommand(".spec", cmd::spectate);
 	pCRMP->getInput()->addClientCommand(".delcar", cmd::cc_delcar);
-	pCRMP->getInput()->addClientCommand(".test", cmd::test);
+	pCRMP->getInput()->addClientCommand(".tr", cmd::tr);
+	pCRMP->getInput()->addClientCommand(".tr_one", cmd::tr_one);
+	//pCRMP->getInput()->addClientCommand(".test", cmd::test);
 }

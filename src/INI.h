@@ -301,7 +301,8 @@ struct trainer_key
 {
 	uint32_t menu;
 
-	uint32_t good_mode;
+	uint32_t god_mode_ped;
+	uint32_t god_mode_veh;
 	uint32_t dialoghider;
 	uint32_t air_break;
 	uint32_t suicide;

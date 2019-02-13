@@ -137,6 +137,7 @@ void RakClient::SendFakeOnfootSyncData(float fPos[3], float fHealth, float fSpee
 	ofSync.byteHealth = (uint8_t)fHealth;
 	vect3_copy(fPos, ofSync.fPosition);
 	vect3_copy(fSpeed, ofSync.fMoveSpeed);
+	ofSync.sCurrentAnimationID = 0;
 
 	bsOnfootSync.Write((BYTE)ID_PLAYER_SYNC);
 	bsOnfootSync.Write((PCHAR)&ofSync, sizeof(stOnFootData));

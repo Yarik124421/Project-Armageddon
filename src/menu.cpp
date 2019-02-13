@@ -197,6 +197,7 @@ void ImGui_Menu_Draw()
 		if (ImGui::CollapsingHeader(cp1251_to_utf8("Свежак :)").c_str()))
 		{
 			ImGui::Checkbox(cp1251_to_utf8("Обход каршота").c_str(), &menu.carshotbypass);
+			ImGui::Checkbox(cp1251_to_utf8("Фэйк АФК").c_str(), &menu.fakeafk);
 			ImGui::Checkbox(cp1251_to_utf8("Крашер с ног").c_str(), &menu.rollcrasher);
 			ImGui::Checkbox(cp1251_to_utf8("Стрельба авто v3").c_str(), &menu.car_shooter);
 			ImGui::PushItemWidth(fItemWidth);
@@ -241,9 +242,9 @@ void ImGui_Menu_Draw()
 			ImGui::Separator();
 			ImGui::Checkbox(cp1251_to_utf8("Отрисовка игроков").c_str(), &menu.render.player);
 			ImGui::Checkbox(cp1251_to_utf8("Отрисовка автомобилей").c_str(), &menu.render.vehicle);
-			ImGui::Checkbox(cp1251_to_utf8("Отрисовка пикапов").c_str(), &menu.render.pickup);
-			ImGui::Checkbox(cp1251_to_utf8("Отрисовка объектов").c_str(), &menu.render.object);
-			ImGui::Checkbox(cp1251_to_utf8("Отрисовка 3D лейблов").c_str(), &menu.render.labels);
+			//ImGui::Checkbox(cp1251_to_utf8("Отрисовка пикапов").c_str(), &menu.render.pickup);
+			//ImGui::Checkbox(cp1251_to_utf8("Отрисовка объектов").c_str(), &menu.render.object);
+			//ImGui::Checkbox(cp1251_to_utf8("Отрисовка 3D лейблов").c_str(), &menu.render.labels);
 			ImGui::Separator();
 		}
 		ImGui::Spacing();
@@ -264,6 +265,8 @@ void ImGui_Menu_Draw()
 			ImGui::Checkbox(cp1251_to_utf8("Коллизия игроков").c_str(), &menu.play_col);
 			ImGui::Checkbox(cp1251_to_utf8("Коллизия автомобилей").c_str(), &menu.veh_col);
 			ImGui::Checkbox(cp1251_to_utf8("Коллизия обьектов").c_str(), &menu.obj_col);
+			ImGui::Checkbox(cp1251_to_utf8("Пульсатор цветов").c_str(), &menu.pulsecolor);
+			ImGui::Checkbox(cp1251_to_utf8("Пульсатор колёс").c_str(), &menu.pulsewheels);
 			if (ImGui::Button(cp1251_to_utf8("Дамп объектов").c_str(), ImVec2(fItemWidth, 15.f))) ImGui_ObjectDump();
 			ImGui::Separator();
 		}

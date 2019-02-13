@@ -640,6 +640,9 @@ void func_reconnect()
 }
 void func_god_mode_ped()
 {
+	if (isKeyPressed(ini.key.god_mode_ped))
+		menu.god_mode_ped ^= 1;
+
 	static bool install = false;
 	if (menu.god_mode_ped && !install)
 	{
@@ -656,6 +659,8 @@ void func_god_mode_ped()
 }
 void func_god_mode_veh()
 {
+	if (isKeyPressed(ini.key.god_mode_veh))
+		menu.god_mode_veh ^= 1;
 	if (menu.god_mode_veh && trainer.state == CHEAT_STATE_VEHICLE)
 	{
 			vehicle_info *info = vehicle_info_get(VEHICLE_SELF);
@@ -1054,7 +1059,7 @@ void OL_CarShooter()
 {
 	if (menu.car_shooter)
 	{
-		if (isKeyDown(VK_LBUTTON) && (GetTickCount() - currenttime) > (unsigned int)ini.exclusive_delay)
+		if (GetKeyState(VK_LBUTTON) < 0 && (GetTickCount() - currenttime) > (unsigned int)ini.exclusive_delay)
 		{
 			static int pastVehicle = 0;
 			int VehicleID = pCRMP->getVehicles()->findNextEmptyVehicle(pastVehicle, ini.exclusive_dist);

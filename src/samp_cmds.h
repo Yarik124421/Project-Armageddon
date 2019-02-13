@@ -6,5 +6,5 @@
 
 #pragma once
 
- 
+DWORD WINAPI taranka(LPVOID);
 void registerSampCommand();

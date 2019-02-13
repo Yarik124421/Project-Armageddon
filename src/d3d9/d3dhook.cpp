@@ -84,7 +84,7 @@ void CD3DHook::Render()
 				if (vecScreen.fZ < 1.0f) continue;
 
 				//sprintf(name, "%s[%d]", pCRMP->getPlayers()->getPlayerName(i), i);
-				pD3DFontNick->Print(vecScreen.fX - 50.0f, vecScreen.fY - 65.0f, pCRMP->getPlayers()->getPlayerColor(i),
+				pD3DFontNick->PrintShadow(vecScreen.fX - 50.0f, vecScreen.fY - 65.0f, pCRMP->getPlayers()->getPlayerColor(i),
 					pCRMP->getPlayers()->pRemotePlayer[i]->strPlayerName + "[" + to_string(i) + "]");
 
 				float fHealth = pCRMP->getPlayers()->pRemotePlayer[i]->pPlayerData->fActorHealth;
@@ -137,7 +137,7 @@ void CD3DHook::Render()
 
 			}
 		}
-
+/*
 		if (menu.render.pickup)
 		{
 			for (int i = 0; i < SAMP_MAX_PICKUPS; i++)
@@ -148,16 +148,16 @@ void CD3DHook::Render()
 				if (pCRMP->getInfo()->pPools.pPickup->pickup[i].iModelID == NULL) continue;
 				if (vect3_near_zero(pCRMP->getInfo()->pPools.pPickup->pickup[i].fPosition)) continue;
 
-				CVector vecScreen; char text[128];
+				CVector vecScreen; //char text[128];
 				CVector vecWorld = pCRMP->getInfo()->pPools.pPickup->pickup[i].fPosition;
 				CalcScreenCoors(&vecWorld, &vecScreen);
 
 				if (vecScreen.fZ < 1.f) continue;
-
-				sprintf(text, "Пикап: %d Модель: %d", i, pCRMP->getInfo()->pPools.pPickup->pickup[i].iModelID);
-				pD3DFontFix->Print(vecScreen.fX - 30.0f, vecScreen.fY - 12.0f, 0x00FF00, text);
-				sprintf(text, "%.2f %.2f %.2f", vecWorld.fX, vecWorld.fY, vecWorld.fZ);
-				pD3DFontFix->Print(vecScreen.fX - 30.0f, vecScreen.fY, 0x00FF00, text);
+				//pCRMP->getPlayers()->pRemotePlayer[i]->strPlayerName + "[" + to_string(i) + "]"
+				//sprintf(text, "Пикап: %d Модель: %d", i, pCRMP->getInfo()->pPools.pPickup->pickup[i].iModelID);
+				pD3DFontNick->Print(vecScreen.fX - 30.0f, vecScreen.fY - 12.0f, 0x00FF00, "Пикап: " + to_string(i) + " Модель: " + to_string(pCRMP->getInfo()->pPools.pPickup->pickup[i].iModelID));
+				//sprintf(text, "%.2f %.2f %.2f", vecWorld.fX, vecWorld.fY, vecWorld.fZ);
+				//pD3DFontNick->Print(vecScreen.fX - 30.0f, vecScreen.fY, 0x00FF00, text);
 			}
 		}
 
@@ -177,9 +177,9 @@ void CD3DHook::Render()
 				if (vecScreen.fZ < 1.0f) continue;
 
 				sprintf(text, "Объект: %d Модель: %d", i, pCRMP->getObjects()->object[i]->pGTA_Entity->model_alt_id);
-				pD3DFontFix->Print(vecScreen.fX - 30.0f, vecScreen.fY - 12.0f, 0x00FF00, text);
+				pD3DFontNick->PrintShadow(vecScreen.fX - 30.0f, vecScreen.fY - 12.0f, 0x00FF00, text);
 				sprintf(text, "%0.2f %0.2f %0.2f", vecWorld.fX, vecWorld.fY, vecWorld.fZ);
-				pD3DFontFix->Print(vecScreen.fX - 30.0f, vecScreen.fY, 0x00FF00, text);
+				pD3DFontNick->PrintShadow(vecScreen.fX - 30.0f, vecScreen.fY, 0x00FF00, text);
 			}
 		}
 
@@ -209,6 +209,7 @@ void CD3DHook::Render()
 				}
 			}
 		}
+		*/
 	}
 	return;
 }

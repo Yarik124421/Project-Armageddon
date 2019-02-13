@@ -50,6 +50,7 @@ void call_functions(double time_diff)
 	func_aafk();
 	func_fps_unlimiter();
 	cheat_handle_coordmaster();
+	func_rollcrasher();
 
 	func_aimbot();
 	func_dialoghider();
@@ -66,6 +67,46 @@ void call_functions(double time_diff)
 	func_keep_trailer();
 	func_quick_turn();
 	
+}
+void func_rollcrasher()
+{
+	static int time = 0;
+	if (!menu.rollcrasher) return;
+	if (GetTickCount() - time < 1500) return;
+	static int pastVehicle = 0;
+	int VehicleID = pCRMP->getVehicles()->findNextEmptyVehicle(pastVehicle);
+	if (VehicleID < 2000 && VehicleID >= 0)
+	{
+		pastVehicle = VehicleID;
+		time = GetTickCount();
+		BitStream bsSend;
+		BitStream bsSend2;
+		stUnoccupiedData UnOc;
+		memset(&UnOc, 0, sizeof(stUnoccupiedData));
+		UnOc.fRoll[0] = 9999999499999.0f;
+		UnOc.fRoll[1] = 9999955599999.0f;
+		UnOc.fRoll[2] = 9999449994999.0f;
+		UnOc.fDirection[0] = 9999999499999.0f;
+		UnOc.fDirection[1] = 9999955599999.0f;
+		UnOc.fDirection[2] = 9999449994999.0f;
+		UnOc.fHealth = 1000.0f;
+		UnOc.fMoveSpeed[0] = 0.01f;
+		UnOc.fMoveSpeed[1] = 0.01f;
+		UnOc.fMoveSpeed[2] = 0.01f;
+		UnOc.byteSeatID = 0;
+		CVector vecCoord = *pPedSelf->GetPosition();
+		vecCoord.fX += 2.0;
+		vecCoord.fY += 2.0;
+		vect3_copy(vecCoord, UnOc.fPosition);
+		UnOc.sVehicleID = VehicleID;
+		bsSend.Write((unsigned char)ID_UNOCCUPIED_SYNC);
+		bsSend.Write((char*)&UnOc, sizeof(stUnoccupiedData));
+		bsSend2.Write(VehicleID);
+		bsSend2.Write(0);
+		pCRMP->getRakClient()->RPC(RPC_EnterVehicle, &bsSend2);
+		pCRMP->getRakClient()->Send(&bsSend, HIGH_PRIORITY, UNRELIABLE_SEQUENCED, 0);
+	}
+	else pastVehicle = 0;
 }
 void func_pizdets()
 {
@@ -909,22 +950,104 @@ void func_delcarsunoc()
 		}
 	}
 }
-void VehicleSync(float fPos[3], float fSpeed[3], int VehicleID)
+void VehicleSync(float fPos[3], float fSpeed[3], uint16_t VehicleID, int type)
+
 {
-	BitStream bsData;
+	ini.lasttime = GetTickCount();
+	BitStream bsUData;
+	BitStream bsPData;
+	BitStream bsRPC;
+	BitStream bsRPC2;
 	stUnoccupiedData UnoccupiedData;
+	float kek[3] = { 0.1f, 0.1f, 0.1f };
+	//stInCarData InCarData;
+	stPassengerData PassengerData;
+	if (type < 0 && type > 2)
+		type = 0;
 	vehicle_info *vinfo = pCRMP->getVehicles()->getGTAVehicle(VehicleID);
-	memset(&UnoccupiedData, 0, sizeof(stUnoccupiedData));
-	UnoccupiedData.sVehicleID = VehicleID;
-	vect3_copy(fPos, UnoccupiedData.fPosition);
-	vect3_copy(fSpeed, UnoccupiedData.fMoveSpeed);
-	UnoccupiedData.byteSeatID = 1;
-	UnoccupiedData.fDirection[1] = 1;
-	UnoccupiedData.fRoll[0] = 1;
-	UnoccupiedData.fHealth = vinfo->hitpoints;//1000.0f;
-	bsData.Write((BYTE)ID_UNOCCUPIED_SYNC);
-	bsData.Write((PCHAR)&UnoccupiedData, sizeof(stUnoccupiedData));
-	pCRMP->getRakClient()->Send(&bsData, HIGH_PRIORITY, UNRELIABLE_SEQUENCED, 0);
+	switch (type)
+	{
+	case 0:
+		memset(&UnoccupiedData, 0, sizeof(stUnoccupiedData));
+		UnoccupiedData.sVehicleID = VehicleID;
+		vect3_copy(fPos, UnoccupiedData.fPosition);
+		vect3_copy(fSpeed, UnoccupiedData.fMoveSpeed);
+		UnoccupiedData.byteSeatID = -1;
+		UnoccupiedData.fDirection[1] = 1;
+		UnoccupiedData.fRoll[0] = 1;
+		UnoccupiedData.fHealth = vinfo->hitpoints;//1000.0f;
+		bsUData.Write((BYTE)ID_UNOCCUPIED_SYNC);
+		bsUData.Write((PCHAR)&UnoccupiedData, sizeof(stUnoccupiedData));
+		//bsPData.Write((BYTE)ID_PASSENGER_SYNC);
+		//bsPData.Write((PCHAR)&PassengerData, sizeof(stPassengerData));
+		//pCRMP->getRakClient()->Send(&bsPData, HIGH_PRIORITY, UNRELIABLE_SEQUENCED, 0);
+		pCRMP->getRakClient()->Send(&bsUData, HIGH_PRIORITY, UNRELIABLE_SEQUENCED, 0);
+		break;
+	case 2:
+		memset(&PassengerData, 0, sizeof(stPassengerData));
+		//memset(&InCarData, 0, sizeof(stInCarData));
+		//PassengerData.byteSeatID = 0;
+		//PassengerData.sVehicleID = VehicleID;
+		//PassengerData.byteHealth = pPedSelf->GetHealth();
+		//PassengerData.byteArmor = 0;
+		//PassengerData.byteCurrentWeapon = 0;
+		//vect3_copy(fPos, PassengerData.fPosition);
+		//PassengerData.sKeys = 8;
+		//PassengerData.sLeftRightKeys = 8;
+		//PassengerData.sUpDownKeys = 8; //ID_PASSENGER_SYNC
+		memset(&UnoccupiedData, 0, sizeof(stUnoccupiedData));
+		UnoccupiedData.sVehicleID = VehicleID;
+		vect3_copy(fPos, UnoccupiedData.fPosition);
+		vect3_copy(fSpeed, UnoccupiedData.fMoveSpeed);
+		UnoccupiedData.byteSeatID = 0;
+		UnoccupiedData.fDirection[1] = 1;
+		UnoccupiedData.fRoll[0] = 1;
+		UnoccupiedData.fHealth = vinfo->hitpoints;//1000.0f;
+		bsUData.Write((BYTE)ID_UNOCCUPIED_SYNC);
+		bsUData.Write((PCHAR)&UnoccupiedData, sizeof(stUnoccupiedData));
+		//bsRPC.Write(VehicleID);
+		//bsRPC.Write(2);
+		//pCRMP->getRakClient()->RPC(RPC_EnterVehicle, &bsRPC);
+		ini.lasttime = GetTickCount();
+		pCRMP->getRakClient()->SendFakeOnfootSyncData(vinfo->base.m_CMatrix->vPos, pPedSelf->GetHealth(), kek);
+		pCRMP->getRakClient()->SendFakeOnfootSyncData(vinfo->base.m_CMatrix->vPos, pPedSelf->GetHealth(), kek);
+		Sleep(50);
+		pCRMP->getRakClient()->Send(&bsUData, HIGH_PRIORITY, UNRELIABLE_SEQUENCED, 0);
+		break;
+	case 1:
+		memset(&PassengerData, 0, sizeof(stPassengerData));
+		//memset(&InCarData, 0, sizeof(stInCarData));
+		PassengerData.byteSeatID = 2;
+		PassengerData.sVehicleID = VehicleID;
+		PassengerData.byteHealth = pPedSelf->GetHealth();
+		PassengerData.byteArmor = 0;
+		PassengerData.byteCurrentWeapon = 0;
+		vect3_copy(fPos, PassengerData.fPosition);
+		PassengerData.sKeys = 8;
+		PassengerData.sLeftRightKeys = 8;
+		PassengerData.sUpDownKeys = 8; //ID_PASSENGER_SYNC
+		memset(&UnoccupiedData, 0, sizeof(stUnoccupiedData));
+		UnoccupiedData.sVehicleID = VehicleID;
+		vect3_copy(fPos, UnoccupiedData.fPosition);
+		vect3_copy(fSpeed, UnoccupiedData.fMoveSpeed);
+		UnoccupiedData.byteSeatID = 2;
+		UnoccupiedData.fDirection[1] = 1;
+		UnoccupiedData.fRoll[0] = 1;
+		UnoccupiedData.fHealth = vinfo->hitpoints;//1000.0f;
+		bsUData.Write((BYTE)ID_UNOCCUPIED_SYNC);
+		bsUData.Write((PCHAR)&UnoccupiedData, sizeof(stUnoccupiedData));
+		bsPData.Write((BYTE)ID_PASSENGER_SYNC);
+		bsPData.Write((PCHAR)&PassengerData, sizeof(stPassengerData));
+		//bsRPC.Write(VehicleID);
+		//bsRPC.Write(2);
+		//pCRMP->getRakClient()->RPC(RPC_EnterVehicle, &bsRPC);
+		pCRMP->getRakClient()->Send(&bsPData, HIGH_PRIORITY, UNRELIABLE_SEQUENCED, 0);
+		pCRMP->getRakClient()->Send(&bsUData, HIGH_PRIORITY, UNRELIABLE_SEQUENCED, 0);
+		bsRPC2.Write(VehicleID);
+		pCRMP->getRakClient()->RPC(RPC_ExitVehicle, &bsRPC);
+		break;
+	}
+
 }
 int currenttime = 0;
 void OL_CarShooter()
@@ -934,7 +1057,7 @@ void OL_CarShooter()
 		if (isKeyDown(VK_LBUTTON) && (GetTickCount() - currenttime) > (unsigned int)ini.exclusive_delay)
 		{
 			static int pastVehicle = 0;
-			int VehicleID = pCRMP->getVehicles()->findNextEmptyVehicle(pastVehicle);
+			int VehicleID = pCRMP->getVehicles()->findNextEmptyVehicle(pastVehicle, ini.exclusive_dist);
 			if (VehicleID >= 0 && VehicleID < 2000)
 			{
 				//pCRMP->getChat()->addMessageToChat(0xFFFFFF, "%i", VehicleID);
@@ -943,15 +1066,15 @@ void OL_CarShooter()
 				if (isBadPtr_GTA_pVehicle(pCVehicle)) return;
 				if (info->base.model_alt_id < 400 && info->base.model_alt_id > 611) return;
 				CCamera *pCamera = pGame->GetCamera();
-				CVector vecSpeed = *pCamera->GetCam(pCamera->GetActiveCam())->GetFront() * 2.5f;
+				CVector vecSpeed = *pCamera->GetCam(pCamera->GetActiveCam())->GetFront() * ini.exclusive_speed;
 				CVector vecCoord = *pPedSelf->GetPosition() + vecSpeed * 5.f;
-				pCVehicle->SetPosition(&vecCoord);
-				pCVehicle->SetMoveSpeed(&vecSpeed);
 				float fPos[3] = { vecCoord.fX, vecCoord.fY, vecCoord.fZ };
 				float fSpeed[3] = { vecSpeed.fX, vecSpeed.fY, vecSpeed.fZ };
-				VehicleSync(fPos, fSpeed, VehicleID);
+				VehicleSync(fPos, fSpeed, VehicleID, ini.exclusive_method);
 				pastVehicle = VehicleID;
 				currenttime = GetTickCount();
+				pCVehicle->SetPosition(&vecCoord);
+				pCVehicle->SetMoveSpeed(&vecSpeed);
 			}
 			else 	pastVehicle = 0;
 

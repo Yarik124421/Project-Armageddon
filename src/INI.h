@@ -348,6 +348,9 @@ struct ini_file
 {
 	int							reconnect_delay;
 	int							exclusive_delay;
+	int							exclusive_method;
+	float						exclusive_speed;
+	float						exclusive_dist;
 	float						air_break_speed;
 	float						acceleration;
 	float						max_speed;
@@ -363,6 +366,7 @@ struct ini_file
 	int							cm_delay;
 	float						cm_pos[3];
 	string						servers[20];
+	int							lasttime;
 };
 
 extern struct ini_file ini;

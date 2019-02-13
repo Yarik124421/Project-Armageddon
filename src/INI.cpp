@@ -147,6 +147,8 @@ void create_ini_file()
 	Config->SetValue("Keys", "unflip", std::make_unique<ConfigValue>(46, CONFIG_INT));
 
 	Config->SetValue("Changes", "exclusive_delay", std::make_unique<ConfigValue>(50, CONFIG_INT));
+	Config->SetValue("Changes", "exclusive_speed", std::make_unique<ConfigValue>(2.5f, CONFIG_FLOAT));
+	Config->SetValue("Changes", "exclusive_dist", std::make_unique<ConfigValue>(200.0f, CONFIG_FLOAT));
 	Config->SetValue("Changes", "reconnect_delay", std::make_unique<ConfigValue>(5, CONFIG_INT));
 	Config->SetValue("Changes", "carshot_speed", std::make_unique<ConfigValue>(50.0f, CONFIG_FLOAT));
 	Config->SetValue("Changes", "air_break_speed", std::make_unique<ConfigValue>(50.0f, CONFIG_FLOAT));
@@ -223,6 +225,8 @@ void get_ini_file_settings()
 	ini.max_speed = Config->GetFloatValue("Changes", "max_speed");
 	ini.reconnect_delay = Config->GetIntValue("Changes", "reconnect_delay");
 	ini.exclusive_delay = Config->GetIntValue("Changes", "exclusive_delay");
+	ini.exclusive_speed = Config->GetIntValue("Changes", "exclusive_speed");
+	ini.exclusive_dist = Config->GetIntValue("Changes", "exclusive_dist");
 
 
 	menu.restore_aero = Config->GetIntValue("StartUP", "restore_windows_aero");
@@ -270,6 +274,8 @@ void get_ini_file_settings()
 void save_all_settings()
 {
 	Config->SetValue("Changes", "exclusive_delay", std::make_unique<ConfigValue>(ini.exclusive_delay, CONFIG_INT));
+	Config->SetValue("Changes", "exclusive_dist", std::make_unique<ConfigValue>(ini.exclusive_dist, CONFIG_FLOAT));
+	Config->SetValue("Changes", "exclusive_speed", std::make_unique<ConfigValue>(ini.exclusive_speed, CONFIG_FLOAT));
 	Config->SetValue("Changes", "reconnect_delay", std::make_unique<ConfigValue>(ini.reconnect_delay, CONFIG_INT));
 	Config->SetValue("Changes", "carshot_speed", std::make_unique<ConfigValue>(ini.carshot_speed, CONFIG_FLOAT));
 	Config->SetValue("Changes", "air_break_speed", std::make_unique<ConfigValue>(ini.air_break_speed, CONFIG_FLOAT));

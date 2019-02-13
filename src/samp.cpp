@@ -767,9 +767,9 @@ void stScoreboardInfo::enableScoreboard(void)
 /*
 				CCRMP Class End
 */
-int stVehiclePool::findNextEmptyVehicle(int pastVeh)
+int stVehiclePool::findNextEmptyVehicle(int pastVeh, float dist)
 {
-	int nearest = -1; float dist = 300.0f;
+	int nearest = -1;
 
 	for (int i = pastVeh + 1; i < SAMP_MAX_VEHICLES; i++)
 	{

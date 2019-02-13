@@ -20,6 +20,8 @@
 //#define NamalskTeam
 //#define PATH_TO_CHECKING_SCRIPT		"https://litehack.ru/crmp_trainer/version.php"
 //#define PATH_TO_OFFICIAL_THREAD		"https://litehack.ru/threads/3275/"
+#define TRAINER_VERSION				4
+#define UPDATE_LINK					"https://vk.com/cheatscrmp"
 
 // API/SDK 
 #include <windows.h>

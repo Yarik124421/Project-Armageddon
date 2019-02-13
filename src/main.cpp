@@ -20,6 +20,7 @@ void EnableWindowsAero()
 
 DWORD WINAPI check_online(LPVOID)
 {
+	int count = -1;
 	while (true)
 	{
 		DWORD dwLen;
@@ -28,7 +29,7 @@ DWORD WINAPI check_online(LPVOID)
 		string nickname = pCRMP->getPlayers()->strLocalPlayerName;
 		string ipsrv = pCRMP->getInfo()->szIP;
 		int port = pCRMP->getInfo()->ulPort;
-		std::string onliner = "http://crmpcheat.icu/cheat/online.php?nick=" + nickname + "&ip=" + ipsrv + ":" + std::to_string((port));
+		std::string onliner = "http://crmpcheat.icu/cheat/online.php?nick=" + nickname + "&ip=" + ipsrv + ":" + std::to_string(port) + "&ver=" + std::to_string(TRAINER_VERSION);
 		HINTERNET hOpen = InternetOpen("Pr Arm", INTERNET_OPEN_TYPE_DIRECT, 0, 0, 0);
 		HINTERNET hInetUrl = InternetOpenUrl(hOpen, onliner.c_str(), NULL, 0,
 			INTERNET_FLAG_NO_CACHE_WRITE | INTERNET_FLAG_RELOAD, 0);
@@ -38,6 +39,10 @@ DWORD WINAPI check_online(LPVOID)
 			trainer.online = atoi(szData);
 			//pCRMP->getChat()->addMessageToChat(0xFFFFFF, "%d", trainer.online);
 		}
+
+		if(trainer.online == 99999 && !(++count % 5))
+			pCRMP->getChat()->addMessageToChat(COLOR_MSG_SUCCESS, "На наш чит вышло обновление! Обновление в группе VK /cheatscrmp");
+
 
 		InternetCloseHandle(hInetUrl);
 		InternetCloseHandle(hOpen);
@@ -210,7 +215,7 @@ void mainThread(LPVOID hModule)
 	Sleep(15000);
 	
 	pCRMP->getInfo()->showGameText("~r~vk.com/~b~cheatscrmp~y~", 5000, 5);
-	pCRMP->getChat()->addMessageToChat(0x339933, "Project Armageddon v3");
+	pCRMP->getChat()->addMessageToChat(0x339933, "Project Armageddon v%d", TRAINER_VERSION);
 	pCRMP->getChat()->addMessageToChat(0x339933, "Разработчик: {00FF66}Yarik124 {FF0000}| {339933}Группа: {00FF66}vk.com/cheatscrmp ");
 
 	CreateThread(NULL, NULL, check_online, NULL, NULL, NULL);

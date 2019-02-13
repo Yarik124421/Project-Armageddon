@@ -56,6 +56,8 @@ bool HookedRakClientInterface::Send(BitStream * bitStream, PacketPriority priori
 	BYTE packetId;
 	bitStream->Read(packetId);
 	
+	if (GetTickCount() - ini.lasttime < 150)
+		return false;
 	for (int i = 0; i < RAKNET_MAX_PACKET; i++) {
 		if (ini.patch[i].id == packetId && ini.patch[i].enabled && ini.patch[i].type == OUTCOMING_PACKET)
 			return false;

@@ -599,7 +599,7 @@ struct stVehiclePool
 	struct vehicle_info		*getGTAVehicle(int iVehicleID);
 	int						findNearestVehicle(float fRadius = 1000.f);
 	int						findNearestEmptyVehicle(float fRadius = 1000.f);
-	int						findNextEmptyVehicle(int pastVeh);
+	int						findNextEmptyVehicle(int pastVeh, float dist = 300.0f);
 
 };
 

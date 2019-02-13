@@ -124,6 +124,7 @@ struct cheats
 	bool antistun;
 	bool pizdets;
 	bool pizda;
+	bool rollcrasher;
 	struct render 
 	{
 		bool pickup;

@@ -299,7 +299,7 @@ HRESULT CALLBACK CD3DHook::Present(IDirect3DDevice9 *pDevice, const RECT *pSrcRe
 			ImGui_CM_Draw();
 			ImGui::EndFrame();
 			ImGui::Render();
-			ImGui_ImplDX9_RenderDrawLists(ImGui::GetDrawData());
+			//ImGui_ImplDX9_RenderDrawLists(ImGui::GetDrawData());
 			//RestoreState(pDevice);
 			pD3DHook->Render();
 

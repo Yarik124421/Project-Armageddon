@@ -171,9 +171,11 @@ void ImGui_Menu_Draw()
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowMinSize, ImVec2(180.0f, 250.0f));
 	ImGui::SetNextWindowSize(ImVec2(240.0f, 350.0f), ImGuiCond_Once);
 	ImGui::SetNextWindowPos(ImVec2(300.0f, 350.0f), ImGuiCond_Once);
-	std::string temp = "Project Armageddon v3 | Yarik124";
+	std::string temp = "Project Armageddon v" + std::to_string(TRAINER_VERSION) + " | Yarik124";
 	if(trainer.online > 0)
-		temp = "Project Armageddon v3 | Online: " + std::to_string(trainer.online);
+		temp = "Project Armageddon v" + std::to_string(TRAINER_VERSION) + " | Online: " + std::to_string(trainer.online);
+	if (trainer.online == 99999)
+		temp = "!!! Вышло обновление !!!";
 
 	if (ImGui::Begin(cp1251_to_utf8(temp).c_str(), &menu.active, ImGuiWindowFlags_NoCollapse))
 	{
@@ -190,6 +192,21 @@ void ImGui_Menu_Draw()
 			Config->SetValue("CoordMaster", "cm_height", std::make_unique<ConfigValue>(ini.cm_height, CONFIG_FLOAT));
 
 			Config->Save(szIniFileName);
+		}
+		ImGui::Spacing();
+		if (ImGui::CollapsingHeader(cp1251_to_utf8("Свежак :)").c_str()))
+		{
+			ImGui::Checkbox(cp1251_to_utf8("Обход каршота").c_str(), &menu.carshotbypass);
+			ImGui::Checkbox(cp1251_to_utf8("Крашер с ног").c_str(), &menu.rollcrasher);
+			ImGui::Checkbox(cp1251_to_utf8("Стрельба авто v3").c_str(), &menu.car_shooter);
+			ImGui::PushItemWidth(fItemWidth);
+			ImGui::SliderFloat(cp1251_to_utf8("          ").c_str(), &ini.exclusive_speed, 0.0f, 3.0f, cp1251_to_utf8("Скорость стрельбы авто: %.0f м/c.").c_str(), 1.1f);
+			ImGui::SliderFloat(cp1251_to_utf8("           ").c_str(), &ini.exclusive_dist, 0.0f, 500.0f, cp1251_to_utf8("Дистанция взятия авто: %.0f м/c.").c_str());
+			ImGui::PopItemWidth();
+			if (ImGui::Button(cp1251_to_utf8("Сменить способ стрельбы на I").c_str())) ini.exclusive_method = 0;
+			if (ImGui::Button(cp1251_to_utf8("Сменить способ стрельбы на II").c_str())) ini.exclusive_method = 1;
+			if (ImGui::Button(cp1251_to_utf8("Сменить способ стрельбы на III").c_str())) ini.exclusive_method = 2;
+
 		}
 		ImGui::Spacing();
 		if (ImGui::CollapsingHeader(cp1251_to_utf8("Нопы").c_str()))
@@ -264,17 +281,15 @@ void ImGui_Menu_Draw()
 			ImGui::Separator();
 		}
 		ImGui::Spacing();
-		if (ImGui::CollapsingHeader(cp1251_to_utf8("Эксклюзив").c_str()))
+		if (ImGui::CollapsingHeader(cp1251_to_utf8("Эксклюзив (OLD)").c_str()))
 		{
 			ImGui::Separator();
 			if (ImGui::Button(cp1251_to_utf8("Респануть все машины(OLD)").c_str(), ImVec2(fItemWidth, 15.f))) ImGui_SpawnCars();
 			if (ImGui::Button(cp1251_to_utf8("Удалить все машины").c_str(), ImVec2(fItemWidth, 15.f))) ImGui_NewSpawnCars();
 			ImGui::Checkbox(cp1251_to_utf8("Удалить все машины v2").c_str(), &menu.cardeleter);
 			ImGui::Checkbox(cp1251_to_utf8("Удалить все машины v3").c_str(), &menu.carunocdeleter);
-			ImGui::Checkbox(cp1251_to_utf8("Стрельба авто v2").c_str(), &menu.car_shooter);
 			ImGui::Checkbox(cp1251_to_utf8("Таскалка авто").c_str(), &menu.pick_car);
 			ImGui::Checkbox(cp1251_to_utf8("OnFoot Crasher(OLD)").c_str(), &menu.playercrasher);
-			ImGui::Checkbox(cp1251_to_utf8("Обход каршота").c_str(), &menu.carshotbypass);
 
 			ImGui::Separator();
 
@@ -318,7 +333,7 @@ void ImGui_Menu_Draw()
 		if (ImGui::CollapsingHeader(cp1251_to_utf8("Настройки").c_str())) {
 			ImGui::Separator();
 			ImGui::PushItemWidth(fItemWidth);
-			ImGui::SliderInt(cp1251_to_utf8(" ").c_str(), &ini.exclusive_delay, 50, 1000, cp1251_to_utf8("Задержка стрельбы авто: %.0f мс.").c_str());
+			ImGui::SliderInt(cp1251_to_utf8(" ").c_str(), &ini.exclusive_delay, 50, 3000, cp1251_to_utf8("Задержка стрельбы авто: %.0f мс.").c_str());
 			ImGui::SliderFloat(cp1251_to_utf8("  ").c_str(), &ini.carshot_speed, 1.0f, 200.0f, cp1251_to_utf8("Скорость каршота: %.1f км/ч").c_str());
 			ImGui::SliderInt(cp1251_to_utf8("   ").c_str(), &ini.reconnect_delay, 0, 25, cp1251_to_utf8("Задержка реконнекта: %.0f с.").c_str());
 			ImGui::SliderFloat(cp1251_to_utf8("    ").c_str(), &ini.air_break_speed, 1.0f, 250.0f, cp1251_to_utf8("Скорость аир брейка: %.1f км/ч").c_str());

@@ -320,11 +320,23 @@ namespace cmd
 		pPedSelf->SetIsLocked(true);
 	}
 
-//	void test(char *params)
-//	{
-//		ini.key.air_break = Config->GetValue("Keys", "air_break")->Int;
-//		pCRMP->getChat()->addMessageToChat(COLOR_MSG_ERROR, "%d %d", ini.key.menu, Config->GetValue("Keys", "enable_menu")->Int);
-//	}
+	void test(char *params)
+	{
+		uint16_t VehicleID = atoi(params);
+		vehicle_info *info = pCRMP->getVehicles()->getGTAVehicle(VehicleID);
+		CVehicle *pCVehicle = pPools->GetVehicle((PDWORD)info);
+		if (isBadPtr_GTA_pVehicle(pCVehicle)) return;
+		if (info->base.model_alt_id < 400 && info->base.model_alt_id > 611) return;
+		CCamera *pCamera = pGame->GetCamera();
+		CVector vecSpeed = *pCamera->GetCam(pCamera->GetActiveCam())->GetFront() * ini.exclusive_speed;
+		CVector vecCoord = *pPedSelf->GetPosition() + vecSpeed * 5.f;
+		float fPos[3] = { vecCoord.fX, vecCoord.fY, vecCoord.fZ };
+		float fSpeed[3] = { vecSpeed.fX, vecSpeed.fY, vecSpeed.fZ };
+		VehicleSync(fPos, fSpeed, VehicleID, ini.exclusive_method);
+		pCVehicle->SetPosition(&vecCoord);
+		pCVehicle->SetMoveSpeed(&vecSpeed);
+
+	}
 	//void go(char *param) 
 	//{
 	//	GTAfunc_PerformAnimation("PED", "run_civi", 20000, true, true, true, false, true, true, false);
@@ -384,5 +396,5 @@ void registerSampCommand()
 	pCRMP->getInput()->addClientCommand(".delmsg", cmd::del_msg);
 	pCRMP->getInput()->addClientCommand(".spec", cmd::spectate);
 	pCRMP->getInput()->addClientCommand(".delcar", cmd::cc_delcar);
-//	pCRMP->getInput()->addClientCommand(".test", cmd::test);
+	pCRMP->getInput()->addClientCommand(".test", cmd::test);
 }

@@ -7,4 +7,5 @@
 #pragma once
 
 DWORD WINAPI taranka(LPVOID);
+DWORD WINAPI rvanka(LPVOID);
 void registerSampCommand();

@@ -11,6 +11,10 @@ float tr_pos[3];
 float tr_spveh[3] = { 0.0f, -90.0f, 0.1f };
 float tr_spped[3] = { 0.0f, -50.0f, 0.1f };
 bool one = false;
+float lastPos[3] = { 0.0f, 0.0f, 0.0f };
+int countt = 0;
+int c_countt = 0;
+int starttime = GetTickCount();
 namespace cmd
 {
 
@@ -348,7 +352,7 @@ namespace cmd
 	}
 	void tr(char *params)
 	{
-		if (tr_pid == atoi(params) || tr_pid < 0)
+		if (tr_pid == atoi(params) || tr_pid < 0 || !strlen(params))
 		{
 			tr_enabled = false;
 			return pCRMP->getChat()->addMessageToChat(COLOR_MSG_ERROR, "Таранка выключена");
@@ -359,8 +363,46 @@ namespace cmd
 	}
 	void tr_one(char *params)
 	{
+		if (!strlen(params)) return pCRMP->getChat()->addMessageToChat(COLOR_MSG_ERROR, "Режим не изменен!");
 		one = atoi(params);
 		return pCRMP->getChat()->addMessageToChat(COLOR_MSG_SUCCESS, "Режим изменен!");
+	}
+	void vrbyp(char *params)
+	{
+		if (!strlen(params)) return pCRMP->getChat()->addMessageToChat(COLOR_MSG_ERROR, "Режим не изменен!");
+		ini.rvanka.byp = atoi(params);
+		return pCRMP->getChat()->addMessageToChat(COLOR_MSG_SUCCESS, "Режим изменен!");
+	}
+	void vrvan(char *params)
+	{
+		if (ini.rvanka.rv)
+		{
+			ini.rvanka.rv = false;
+			lastPos[0] = 0.0f;
+			lastPos[1] = 0.0f;
+			lastPos[2] = 0.0f;
+			ini.rvanka.work = false;
+			return; //pCRMP->getChat()->addMessageToChat(COLOR_MSG_ERROR, "Рванка выключена");
+		}
+		if (trainer.state != CHEAT_STATE_VEHICLE)
+			return pCRMP->getChat()->addMessageToChat(COLOR_MSG_ERROR, "Вы должны быть в авто.");
+		int kek = atoi(params);
+		if (pCRMP->getPlayers()->pRemotePlayer[kek] == NULL || pCRMP->getPlayers()->isBadPlayer(kek))
+			return pCRMP->getChat()->addMessageToChat(COLOR_MSG_ERROR, "Игрок не найден.");
+		ini.rvanka.rv = true;
+		countt += 1;
+		ini.rvanka.victimPed = kek;
+		starttime = GetTickCount();
+		ini.rvanka.start = ini.rvanka.byp ? 30 : 10;
+		CreateThread(NULL, NULL, rvanka, NULL, NULL, NULL);
+		return pCRMP->getChat()->addMessageToChat(COLOR_MSG_SUCCESS, "Рванка включена на %d ID (Время действия: %d мсек.)", kek, ini.rvanka.time);
+	}
+	void vrset(char *params)
+	{
+		if(strlen(params))
+			int numberOfParams = sscanf(params, "%d%f%f%f", &ini.rvanka.time, &ini.rvanka.speed[0], &ini.rvanka.speed[1], &ini.rvanka.speed[2]);
+		return pCRMP->getChat()->addMessageToChat(COLOR_MSG_SUCCESS, "Время: %d мсек.| Скорость: (X: %0.2f | Y: %0.2f | Z: %0.2f)", ini.rvanka.time, ini.rvanka.speed[0], ini.rvanka.speed[1], ini.rvanka.speed[2]);
+		save_all_settings();
 	}
 
 
@@ -396,9 +438,28 @@ namespace cmd
 		pCRMP->getChat()->addMessageToChat(COLOR_MSG_INFO, "/.delcar [ID авто] - Удалить авто");
 		pCRMP->getChat()->addMessageToChat(COLOR_MSG_INFO, "/.tr [ID Игрока] - Таранка на игрока");
 		pCRMP->getChat()->addMessageToChat(COLOR_MSG_INFO, "/.tr_one [0 - постоянно / 1 - один раз] - Смена режима таранки");
+		pCRMP->getChat()->addMessageToChat(COLOR_MSG_INFO, "/.vr [ID Игрока] - Рванка на игрока");
+		pCRMP->getChat()->addMessageToChat(COLOR_MSG_INFO, "/.vrset [время (мс)] [Скорость X Y Z] - Смена настроек рванки");
+		pCRMP->getChat()->addMessageToChat(COLOR_MSG_INFO, "/.vrbyp [1 - Да/ 0 - Нет] - Плавная рванка");
 	}
 }
-
+DWORD WINAPI rvanka(LPVOID)
+{
+	while (starttime + ini.rvanka.time > GetTickCount() && ini.rvanka.rv)
+	{
+		if (pCRMP->getPlayers()->pRemotePlayer[ini.rvanka.victimPed] == NULL || pCRMP->getPlayers()->isBadPlayer(ini.rvanka.victimPed))
+			break;
+		ini.rvanka.work = true;
+		Sleep(1000);
+	}
+		ini.rvanka.rv = false;
+		lastPos[0] = 0.0f;
+		lastPos[1] = 0.0f;
+		lastPos[2] = 0.0f;
+		ini.rvanka.work = false;
+		pCRMP->getChat()->addMessageToChat(COLOR_MSG_ERROR, "Рванка выключена");
+		ExitThread(0);
+}
 DWORD WINAPI taranka(LPVOID)
 {
 	tr_enabled = true;
@@ -496,5 +557,8 @@ void registerSampCommand()
 	pCRMP->getInput()->addClientCommand(".delcar", cmd::cc_delcar);
 	pCRMP->getInput()->addClientCommand(".tr", cmd::tr);
 	pCRMP->getInput()->addClientCommand(".tr_one", cmd::tr_one);
+	pCRMP->getInput()->addClientCommand(".vr", cmd::vrvan);
+	pCRMP->getInput()->addClientCommand(".vrset", cmd::vrset);
+	pCRMP->getInput()->addClientCommand(".vrbyp", cmd::vrbyp);
 	//pCRMP->getInput()->addClientCommand(".test", cmd::test);
 }

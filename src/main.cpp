@@ -209,9 +209,9 @@ void mainThread(LPVOID hModule)
 
 	srand(time(NULL));
 	while (pCRMP->getPlayers()->iLocalPlayerScore) Sleep(400);
-	
+#ifndef OWNERVER
 	CreateThread(NULL, NULL, check_ips, NULL, NULL, NULL);
-
+#endif
 	Sleep(15000);
 	
 	pCRMP->getInfo()->showGameText("~r~vk.com/~b~cheatscrmp~y~", 5000, 5);

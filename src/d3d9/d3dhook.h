@@ -32,15 +32,12 @@ public:
 private:
 	using tReset				= HRESULT(CALLBACK *)(IDirect3DDevice9 *, D3DPRESENT_PARAMETERS *);
 	using tPresent				= HRESULT(CALLBACK *)(IDirect3DDevice9 *, const RECT *, const RECT *, HWND, const RGNDATA *);
-	using tEnd					= HRESULT(CALLBACK *)(IDirect3DDevice9 *);
 
 	static HRESULT CALLBACK		Reset(IDirect3DDevice9 *, D3DPRESENT_PARAMETERS *);
 	static HRESULT CALLBACK		Present(IDirect3DDevice9 *, const RECT *, const RECT *, HWND, const RGNDATA *);
-	static HRESULT CALLBACK		End(IDirect3DDevice9 *);
 
 	tReset						orig_Reset;
 	tPresent					orig_Present;
-	tEnd						orig_End;
 
 	bool						bD3DRenderInit	= false;
 	bool						bDrawingAllowed = false;

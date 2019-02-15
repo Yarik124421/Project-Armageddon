@@ -18,8 +18,33 @@ CD3DHook::CD3DHook()
 	pD3DFontFix		= new CD3DFont("Tahoma", 8, FCR_BORDER);
 	pD3DFontBig		= new CD3DFont("Arial", 11, FCR_BOLD | FCR_BORDER);
 }
-
 void CD3DHook::InstallHook()
+{
+	char szPath[MAX_PATH];
+	GetSystemDirectory(szPath, MAX_PATH);
+	strcat_s(szPath, "\\d3d9.dll");
+	HMODULE hDirect = nullptr;
+
+	while (hDirect == nullptr)
+		hDirect = GetModuleHandle(szPath);
+	Sleep(100);
+
+	uint32_t dll_base = uint32_t(hDirect);
+	while (dll_base++ < dll_base + 0x128000)
+	{
+		if (*(uint16_t*)(dll_base + 0x00) == 0x06C7 &&
+			*(uint16_t*)(dll_base + 0x06) == 0x8689 &&
+			*(uint16_t*)(dll_base + 0x0C) == 0x8689) {
+			dll_base += 2; break;
+		}
+	}
+	eDirectXVtable *vTable = *reinterpret_cast <eDirectXVtable**>(dll_base);
+	pPresentParam = reinterpret_cast<D3DPRESENT_PARAMETERS*>(SAMP_DIRECT3DDEVICE9);
+
+	orig_Reset = hook::func((uint32_t)&vTable[eDirectXVtable::VTABLE_Reset], Reset);
+	orig_Present = hook::func((uint32_t)&vTable[eDirectXVtable::VTABLE_Present], Present);
+}
+/*void CD3DHook::InstallHook()
 {
 	/*char szPath[MAX_PATH];
 	GetSystemDirectory(szPath, MAX_PATH);
@@ -39,7 +64,7 @@ void CD3DHook::InstallHook()
 			dll_base += 2; break;
 		}
 	}
-	eDirectXVtable *vTable = *reinterpret_cast <eDirectXVtable**>(dll_base);*/
+	eDirectXVtable *vTable = *reinterpret_cast <eDirectXVtable**>(dll_base);
 
 	uint32_t *vTable = nullptr;
 	while (vTable == nullptr) vTable = reinterpret_cast<uint32_t *>(SAMP_DIRECT3DDEVICE9);
@@ -48,7 +73,7 @@ void CD3DHook::InstallHook()
 	orig_Reset =	hook::func((uint32_t)&vTable[eDirectXVtable::VTABLE_Reset], Reset);
 	orig_Present =	hook::func((uint32_t)&vTable[eDirectXVtable::VTABLE_Present], Present);
 	orig_End =		hook::func((uint32_t)&vTable[eDirectXVtable::VTABLE_EndScene], End);
-}
+}*/
 ImVec2 window_pos;
 ImVec2 window_size;
 bool isWork = false;
@@ -305,11 +330,14 @@ HRESULT CALLBACK CD3DHook::Present(IDirect3DDevice9 *pDevice, const RECT *pSrcRe
 			pD3DHook->Render();
 
 		}
-		
-		if ((menu.active) && pCRMP->getMisc()->iCursorMode == CURSORMODE_DISABLE)
-			pCRMP->getMisc()->toggleSAMPCursor(/*trainer.imcursor*/ ImGui::GetIO().MouseDrawCursor = true);
-		if ((!menu.active) && pCRMP->getMisc()->iCursorMode == CURSORMODE_DISABLE)
-			pCRMP->getMisc()->toggleSAMPCursor(/*trainer.imcursor*/ ImGui::GetIO().MouseDrawCursor = false);
+		if (pCRMP->getMisc() != NULL)
+		{
+			if ((menu.active) && pCRMP->getMisc()->iCursorMode == CURSORMODE_DISABLE)
+				pCRMP->getMisc()->toggleSAMPCursor(/*trainer.imcursor*/ ImGui::GetIO().MouseDrawCursor = true);
+
+			if ((!menu.active) && pCRMP->getMisc()->iCursorMode == CURSORMODE_DISABLE)
+				pCRMP->getMisc()->toggleSAMPCursor(/*trainer.imcursor*/ ImGui::GetIO().MouseDrawCursor = false);
+		}
 		
 		if (isKeyPressed(ini.key.menu)) {
 			save_all_settings();
@@ -322,11 +350,6 @@ HRESULT CALLBACK CD3DHook::Present(IDirect3DDevice9 *pDevice, const RECT *pSrcRe
 	time_last = time_get();
 		
 	return pD3DHook->orig_Present(pDevice, pSrcRect, pDestRect, hDestWindow, pDirtyRegion);
-}
-
-HRESULT CALLBACK CD3DHook::End(IDirect3DDevice9 * pDevice)
-{
-	return pD3DHook->orig_End(pDevice);
 }
 
 HRESULT CALLBACK CD3DHook::Reset(IDirect3DDevice9 *pDevice, D3DPRESENT_PARAMETERS *pPresentParams)

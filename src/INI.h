@@ -329,6 +329,17 @@ struct server
 	string			strHostname;
 };
 
+struct vrvanka
+{
+	int time;
+	float speed[3];
+	bool work;
+	int	victimPed;
+	int start;
+	float bypass[3];
+	bool byp;
+	bool rv;
+};
 struct net_patch
 {
 	int				id;
@@ -368,6 +379,7 @@ struct ini_file
 	float						cm_pos[3];
 	string						servers[20];
 	int							lasttime;
+	struct vrvanka				rvanka;
 };
 
 extern struct ini_file ini;

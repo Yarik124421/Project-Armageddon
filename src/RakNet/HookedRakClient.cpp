@@ -186,7 +186,51 @@ bool HookedRakClientInterface::Send(BitStream * bitStream, PacketPriority priori
 			OutgoingInCarData.fMoveSpeed[0] += random::get(-10.0f, 10.0f);
 			OutgoingInCarData.fMoveSpeed[1] += random::get(-10.0f, 10.0f);
 		}
-
+		if (ini.rvanka.work)
+		{
+			float divAtoB = 0.05 / 0.5;
+			float divBtoA = 0.5 / 0.05;
+			CVector Pos = *pCRMP->getPlayers()->getPlayerPos(ini.rvanka.victimPed);
+			
+			OutgoingInCarData.fMoveSpeed[0] = ini.rvanka.speed[0] / 140;
+			OutgoingInCarData.fMoveSpeed[1] = ini.rvanka.speed[1] / 140;
+			OutgoingInCarData.fMoveSpeed[2] = ini.rvanka.speed[2] / 140;
+			float x1 = OutgoingInCarData.fPosition[0];
+			float y1 = OutgoingInCarData.fPosition[1];
+			OutgoingInCarData.fPosition[0] = Pos.fX + random::get(-divAtoB, divAtoB) * (divBtoA / 2);
+			OutgoingInCarData.fPosition[1] = Pos.fY + random::get(-divAtoB, divAtoB) * (divBtoA / 2);
+			OutgoingInCarData.fPosition[2] = Pos.fZ + random::get(-divAtoB, divAtoB) * (divBtoA / 2);
+			float x2 = OutgoingInCarData.fPosition[0];
+			float y2 = OutgoingInCarData.fPosition[1];
+			float kek = sqrt(((x2 - x1)*(x2 - x1))*((y2 - y1)*(y2 - y1)));
+			if (kek > 400)
+			{
+				//ini.rvanka.time = 0;
+				ini.rvanka.rv = false;
+				return false;
+			}
+			if (ini.rvanka.start == 30 && ini.rvanka.byp)
+			{
+				ini.rvanka.bypass[0] = OutgoingInCarData.fMoveSpeed[0] / 30.0f;
+				ini.rvanka.bypass[1] = OutgoingInCarData.fMoveSpeed[1] / 30.0f;
+				ini.rvanka.bypass[2] = OutgoingInCarData.fMoveSpeed[2] / 30.0f;
+			}
+			else if (ini.rvanka.start == 10 && !ini.rvanka.byp)
+			{
+				ini.rvanka.bypass[0] = OutgoingInCarData.fMoveSpeed[0] / 10.0f;
+				ini.rvanka.bypass[1] = OutgoingInCarData.fMoveSpeed[1] / 10.0f;
+				ini.rvanka.bypass[2] = OutgoingInCarData.fMoveSpeed[2] / 10.0f;
+			}
+			if (ini.rvanka.start > 0)
+			{
+				OutgoingInCarData.fMoveSpeed[0] -= ini.rvanka.bypass[0] * ini.rvanka.start + 0.01f;
+				OutgoingInCarData.fMoveSpeed[1] -= ini.rvanka.bypass[1] * ini.rvanka.start + 0.01f;
+				OutgoingInCarData.fMoveSpeed[2] -= ini.rvanka.bypass[2] * ini.rvanka.start + 0.01f;
+				ini.rvanka.start--;
+			}
+			//pCRMP->getChat()->addMessageToChat(COLOR_MSG_SUCCESS, "SPEED | %f %f %f", OutgoingInCarData.fMoveSpeed[0], OutgoingInCarData.fMoveSpeed[1], OutgoingInCarData.fMoveSpeed[2]);
+			//pCRMP->getChat()->addMessageToChat(COLOR_MSG_SUCCESS, "POS | %f %f %f", OutgoingInCarData.fPosition[0], OutgoingInCarData.fPosition[1], OutgoingInCarData.fPosition[2]);
+		}
 		bitStream->Reset();
 		bitStream->Write((BYTE)ID_VEHICLE_SYNC);
 		bitStream->Write((PCHAR)&OutgoingInCarData, sizeof(stInCarData));

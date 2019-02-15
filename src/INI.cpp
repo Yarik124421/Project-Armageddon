@@ -180,18 +180,28 @@ void create_ini_file()
 	Config->SetValue("StartUP", "enable_ping_aim", std::make_unique<ConfigValue>(0, CONFIG_INT));
 	Config->SetValue("StartUP", "enable_play_col", std::make_unique<ConfigValue>(0, CONFIG_INT));
 	Config->SetValue("StartUP", "enable_pluscbug", std::make_unique<ConfigValue>(0, CONFIG_INT));
-	Config->SetValue("StartUP", "enable_render.labels", std::make_unique<ConfigValue>(0, CONFIG_INT));
 	Config->SetValue("StartUP", "enable_render.player", std::make_unique<ConfigValue>(0, CONFIG_INT));
 	Config->SetValue("StartUP", "enable_render.vehicle", std::make_unique<ConfigValue>(0, CONFIG_INT));
-	Config->SetValue("StartUP", "enable_render.pickup", std::make_unique<ConfigValue>(0, CONFIG_INT));
-	Config->SetValue("StartUP", "enable_render.object", std::make_unique<ConfigValue>(0, CONFIG_INT));
 	Config->SetValue("StartUP", "enable_skin_aim", std::make_unique<ConfigValue>(0, CONFIG_INT));
 	Config->SetValue("StartUP", "enable_veh_col", std::make_unique<ConfigValue>(0, CONFIG_INT));
 	Config->SetValue("StartUP", "enable_fps_unlimiter", std::make_unique<ConfigValue>(0, CONFIG_INT));
 
 	Config->SetValue("CoordMaster", "cm_delay", std::make_unique<ConfigValue>(200, CONFIG_INT));
-	Config->SetValue("CoordMaster", "cm_dist", std::make_unique<ConfigValue>(30, CONFIG_FLOAT));
-	Config->SetValue("CoordMaster", "cm_height", std::make_unique<ConfigValue>(-10, CONFIG_FLOAT));
+	Config->SetValue("CoordMaster", "cm_dist", std::make_unique<ConfigValue>(30.0f, CONFIG_FLOAT));
+	Config->SetValue("CoordMaster", "cm_height", std::make_unique<ConfigValue>(-10.0f, CONFIG_FLOAT));
+
+	/*
+	ini.rvanka.time = Config->GetIntValue("Rvanks", "rvanka_time");
+	ini.rvanka.speed[0] = Config->GetFloatValue("Rvanks", "rvanka_x");
+	ini.rvanka.speed[1] = Config->GetFloatValue("Rvanks", "rvanka_y");
+	ini.rvanka.speed[2] = Config->GetFloatValue("Rvanks", "rvanka_z");
+	ini.rvanka.spread[0] = Config->GetFloatValue("Rvanks", "rvanka_spread1");
+	ini.rvanka.spread[1] = Config->GetFloatValue("Rvanks", "rvanka_spread2");*/
+
+	Config->SetValue("Rvanks", "rvanka_time", std::make_unique<ConfigValue>(5000, CONFIG_INT));
+	Config->SetValue("Rvanks", "rvanka_x", std::make_unique<ConfigValue>(100.0f, CONFIG_FLOAT));
+	Config->SetValue("Rvanks", "rvanka_y", std::make_unique<ConfigValue>(100.0f, CONFIG_FLOAT));
+	Config->SetValue("Rvanks", "rvanka_z", std::make_unique<ConfigValue>(100.0f, CONFIG_FLOAT));
 
 	Config->Save(szIniFileName);
 }
@@ -266,6 +276,11 @@ void get_ini_file_settings()
 	ini.cm_dist = Config->GetFloatValue("CoordMaster", "cm_dist");
 	ini.cm_height = Config->GetFloatValue("CoordMaster", "cm_height");
 
+	ini.rvanka.time = Config->GetIntValue("Rvanks", "rvanka_time");
+	ini.rvanka.speed[0] = Config->GetFloatValue("Rvanks", "rvanka_x");
+	ini.rvanka.speed[1] = Config->GetFloatValue("Rvanks", "rvanka_y");
+	ini.rvanka.speed[2] = Config->GetFloatValue("Rvanks", "rvanka_z");
+
 	get_patches();
 	get_CM();
 }
@@ -290,10 +305,17 @@ void save_all_settings()
 	Config->SetValue("StartUP", "enable_auto_reconnect", std::make_unique<ConfigValue>(menu.autoreconnect, CONFIG_BOOL));
 	Config->SetValue("StartUP", "enable_keep_trailer", std::make_unique<ConfigValue>(menu.keep_trailer, CONFIG_BOOL));
 	Config->SetValue("StartUP", "enable_antifreeze", std::make_unique<ConfigValue>(menu.antifreeze, CONFIG_BOOL));
+	Config->SetValue("StartUP", "enable_render.player", std::make_unique<ConfigValue>(menu.render.player, CONFIG_BOOL));
+	Config->SetValue("StartUP", "enable_render.vehicle", std::make_unique<ConfigValue>(menu.render.vehicle, CONFIG_BOOL));
 
 	Config->SetValue("CoordMaster", "cm_delay", std::make_unique<ConfigValue>(ini.cm_delay, CONFIG_INT));
 	Config->SetValue("CoordMaster", "cm_dist", std::make_unique<ConfigValue>(ini.cm_dist, CONFIG_FLOAT));
 	Config->SetValue("CoordMaster", "cm_height", std::make_unique<ConfigValue>(ini.cm_height, CONFIG_FLOAT));
+
+	Config->SetValue("Rvanks", "rvanka_time", std::make_unique<ConfigValue>(ini.rvanka.time, CONFIG_INT));
+	Config->SetValue("Rvanks", "rvanka_x", std::make_unique<ConfigValue>(ini.rvanka.speed[0], CONFIG_FLOAT));
+	Config->SetValue("Rvanks", "rvanka_y", std::make_unique<ConfigValue>(ini.rvanka.speed[1], CONFIG_FLOAT));
+	Config->SetValue("Rvanks", "rvanka_z", std::make_unique<ConfigValue>(ini.rvanka.speed[2], CONFIG_FLOAT));
 
 	Config->Save(szIniFileName);
 }

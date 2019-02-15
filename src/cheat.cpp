@@ -664,12 +664,14 @@ void func_god_mode_veh()
 	if (menu.god_mode_veh && trainer.state == CHEAT_STATE_VEHICLE)
 	{
 			vehicle_info *info = vehicle_info_get(VEHICLE_SELF);
+			if (info == nullptr) return;
 			info->m_nVehicleFlags.bCanBeDamaged = false;
 			if(info->trailer != NULL)info->trailer->m_nVehicleFlags.bCanBeDamaged = false;
 	}
 	else if (trainer.state == CHEAT_STATE_VEHICLE && !menu.god_mode_veh)
 	{
 			vehicle_info *info = vehicle_info_get(VEHICLE_SELF);
+			if (info == nullptr) return;
 			info->m_nVehicleFlags.bCanBeDamaged = true;
 			if (info->trailer != NULL)info->trailer->m_nVehicleFlags.bCanBeDamaged = true;
 	}

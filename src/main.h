@@ -22,6 +22,7 @@
 //#define PATH_TO_OFFICIAL_THREAD		"https://litehack.ru/threads/3275/"
 #define TRAINER_VERSION				4
 #define UPDATE_LINK					"https://vk.com/cheatscrmp"
+#define OWNERVER
 
 // API/SDK 
 #include <windows.h>

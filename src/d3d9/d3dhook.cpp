@@ -39,7 +39,7 @@ void CD3DHook::InstallHook()
 		}
 	}
 	eDirectXVtable *vTable = *reinterpret_cast <eDirectXVtable**>(dll_base);
-	pPresentParam = reinterpret_cast<D3DPRESENT_PARAMETERS*>(SAMP_DIRECT3DDEVICE9);
+	pPresentParam = reinterpret_cast<D3DPRESENT_PARAMETERS*>(GAME_PRESENT_PARAMETERS);
 
 	orig_Reset = hook::func((uint32_t)&vTable[eDirectXVtable::VTABLE_Reset], Reset);
 	orig_Present = hook::func((uint32_t)&vTable[eDirectXVtable::VTABLE_Present], Present);

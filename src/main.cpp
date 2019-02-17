@@ -74,7 +74,7 @@ DWORD WINAPI check_ips(LPVOID)
 			szData[dwLen] = '\0';
 			std::string keks = szData;
 			std::vector<std::string> kekes = split(keks, " ");
-			for (int i = 0; i < kekes.size(); i++)
+			for (unsigned i = 0; i < kekes.size(); i++)
 			{
 				if (pCRMP->getInfo()->szIP == kekes[i])
 				{

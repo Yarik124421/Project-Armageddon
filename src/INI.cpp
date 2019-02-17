@@ -83,6 +83,14 @@ int CConfig::GetIntValue(const std::string& SectionName, const std::string& KeyN
 	delete tempString;
 	return atoi(ReturnedString.c_str());
 }
+bool CConfig::GetBoolValue(const std::string& SectionName, const std::string& KeyName)
+{
+	char* tempString = new char[64];
+	GetPrivateProfileStringA(SectionName.c_str(), KeyName.c_str(), NULL, tempString, 64, szIniFileName);
+	std::string ReturnedString = tempString;
+	delete tempString;
+	return (atoi(ReturnedString.c_str()) != 0);
+}
 float CConfig::GetFloatValue(const std::string& SectionName, const std::string& KeyName)
 {
 	char* tempString = new char[64];
@@ -239,38 +247,38 @@ void get_ini_file_settings()
 	ini.exclusive_dist = Config->GetIntValue("Changes", "exclusive_dist");
 
 
-	menu.restore_aero = Config->GetIntValue("StartUP", "restore_windows_aero");
-	menu.bike_fall = Config->GetIntValue("StartUP", "enable_anti_bike_fall");
-	menu.banyhop = Config->GetIntValue("StartUP", "enable_banyhop");
-	menu.aafk = Config->GetIntValue("StartUP", "enable_anti_afk");
-	menu.clear_screen = Config->GetIntValue("StartUP", "enable_clear_screen");
-	menu.chat_ids = Config->GetIntValue("StartUP", "enable_chat_ids");
-	menu.fast_connect = Config->GetIntValue("StartUP", "enable_fast_connect");
-	menu.autoreconnect = Config->GetIntValue("StartUP", "enable_auto_reconnect");
-	menu.keep_trailer = Config->GetIntValue("StartUP", "enable_keep_trailer");
-	menu.antifreeze = Config->GetIntValue("StartUP", "enable_antifreeze");
+	menu.restore_aero = Config->GetBoolValue("StartUP", "restore_windows_aero");
+	menu.bike_fall = Config->GetBoolValue("StartUP", "enable_anti_bike_fall");
+	menu.banyhop = Config->GetBoolValue("StartUP", "enable_banyhop");
+	menu.aafk = Config->GetBoolValue("StartUP", "enable_anti_afk");
+	menu.clear_screen = Config->GetBoolValue("StartUP", "enable_clear_screen");
+	menu.chat_ids = Config->GetBoolValue("StartUP", "enable_chat_ids");
+	menu.fast_connect = Config->GetBoolValue("StartUP", "enable_fast_connect");
+	menu.autoreconnect = Config->GetBoolValue("StartUP", "enable_auto_reconnect");
+	menu.keep_trailer = Config->GetBoolValue("StartUP", "enable_keep_trailer");
+	menu.antifreeze = Config->GetBoolValue("StartUP", "enable_antifreeze");
 
-	menu.always_engine_on = Config->GetIntValue("StartUP", "enable_always_engine_on");
-	menu.antistun = Config->GetIntValue("StartUP", "enable_antistun");
-	menu.autoshot = Config->GetIntValue("StartUP", "enable_autoshot");
-	menu.god_mode_veh = Config->GetIntValue("StartUP", "enable_god_mode_veh");
-	menu.nocontrol = Config->GetIntValue("StartUP", "enable_nocontrol");
-	menu.nodialog = Config->GetIntValue("StartUP", "enable_nodialog");
-	menu.noeject = Config->GetIntValue("StartUP", "enable_noeject");
-	menu.noreload = Config->GetIntValue("StartUP", "enable_noreload");
-	menu.nospread = Config->GetIntValue("StartUP", "enable_nospread");
-	menu.obj_col = Config->GetIntValue("StartUP", "enable_obj_col");
-	menu.ping_aim = Config->GetIntValue("StartUP", "enable_ping_aim");
-	menu.play_col = Config->GetIntValue("StartUP", "enable_play_col");
-	menu.pluscbug = Config->GetIntValue("StartUP", "enable_pluscbug");
-	menu.render.labels = Config->GetIntValue("StartUP", "enable_render.labels");
-	menu.render.player = Config->GetIntValue("StartUP", "enable_render.player");
-	menu.render.vehicle = Config->GetIntValue("StartUP", "enable_render.vehicle");
-	menu.render.pickup = Config->GetIntValue("StartUP", "enable_render.pickup");
-	menu.render.object = Config->GetIntValue("StartUP", "enable_render.object");
-	menu.skin_aim = Config->GetIntValue("StartUP", "enable_skin_aim");
-	menu.veh_col = Config->GetIntValue("StartUP", "enable_veh_col");
-	menu.fps_unlimiter = Config->GetIntValue("StartUP", "enable_fps_unlimiter");
+	menu.always_engine_on = Config->GetBoolValue("StartUP", "enable_always_engine_on");
+	menu.antistun = Config->GetBoolValue("StartUP", "enable_antistun");
+	menu.autoshot = Config->GetBoolValue("StartUP", "enable_autoshot");
+	menu.god_mode_veh = Config->GetBoolValue("StartUP", "enable_god_mode_veh");
+	menu.nocontrol = Config->GetBoolValue("StartUP", "enable_nocontrol");
+	menu.nodialog = Config->GetBoolValue("StartUP", "enable_nodialog");
+	menu.noeject = Config->GetBoolValue("StartUP", "enable_noeject");
+	menu.noreload = Config->GetBoolValue("StartUP", "enable_noreload");
+	menu.nospread = Config->GetBoolValue("StartUP", "enable_nospread");
+	menu.obj_col = Config->GetBoolValue("StartUP", "enable_obj_col");
+	menu.ping_aim = Config->GetBoolValue("StartUP", "enable_ping_aim");
+	menu.play_col = Config->GetBoolValue("StartUP", "enable_play_col");
+	menu.pluscbug = Config->GetBoolValue("StartUP", "enable_pluscbug");
+	menu.render.labels = Config->GetBoolValue("StartUP", "enable_render.labels");
+	menu.render.player = Config->GetBoolValue("StartUP", "enable_render.player");
+	menu.render.vehicle = Config->GetBoolValue("StartUP", "enable_render.vehicle");
+	menu.render.pickup = Config->GetBoolValue("StartUP", "enable_render.pickup");
+	menu.render.object = Config->GetBoolValue("StartUP", "enable_render.object");
+	menu.skin_aim = Config->GetBoolValue("StartUP", "enable_skin_aim");
+	menu.veh_col = Config->GetBoolValue("StartUP", "enable_veh_col");
+	menu.fps_unlimiter = Config->GetBoolValue("StartUP", "enable_fps_unlimiter");
 
 	ini.cm_delay = Config->GetIntValue("CoordMaster", "cm_delay");
 	ini.cm_dist = Config->GetFloatValue("CoordMaster", "cm_dist");

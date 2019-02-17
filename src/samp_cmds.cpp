@@ -364,13 +364,13 @@ namespace cmd
 	void tr_one(char *params)
 	{
 		if (!strlen(params)) return pCRMP->getChat()->addMessageToChat(COLOR_MSG_ERROR, "Режим не изменен!");
-		one = atoi(params);
+		one = (atoi(params) != 0);
 		return pCRMP->getChat()->addMessageToChat(COLOR_MSG_SUCCESS, "Режим изменен!");
 	}
 	void vrbyp(char *params)
 	{
 		if (!strlen(params)) return pCRMP->getChat()->addMessageToChat(COLOR_MSG_ERROR, "Режим не изменен!");
-		ini.rvanka.byp = atoi(params);
+		ini.rvanka.byp = (atoi(params) != 0);
 		return pCRMP->getChat()->addMessageToChat(COLOR_MSG_SUCCESS, "Режим изменен!");
 	}
 	void vrvan(char *params)
@@ -445,7 +445,7 @@ namespace cmd
 }
 DWORD WINAPI rvanka(LPVOID)
 {
-	while (starttime + ini.rvanka.time > GetTickCount() && ini.rvanka.rv)
+	while ((unsigned)(starttime + ini.rvanka.time) > GetTickCount() && ini.rvanka.rv)
 	{
 		if (pCRMP->getPlayers()->pRemotePlayer[ini.rvanka.victimPed] == NULL || pCRMP->getPlayers()->isBadPlayer(ini.rvanka.victimPed))
 			break;

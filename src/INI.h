@@ -55,6 +55,7 @@ class CConfig
 public:
 	void SetValue(std::string SectionName, std::string KeyName, std::unique_ptr<ConfigValue> Value);
 	int GetIntValue(const std::string& SectionName, const std::string& KeyName);
+	bool GetBoolValue(const std::string& SectionName, const std::string& KeyName);
 	float GetFloatValue(const std::string& SectionName, const std::string& KeyName);
 
 	// Returns true if succeeded, returns false if failed.
@@ -296,7 +297,7 @@ namespace file
 };
 
 extern std::unique_ptr<CConfig> Config;
-
+extern struct ini_file ini;
 struct trainer_key
 {
 	uint32_t menu;
@@ -381,8 +382,6 @@ struct ini_file
 	int							lasttime;
 	struct vrvanka				rvanka;
 };
-
-extern struct ini_file ini;
 
 void create_ini_file();
 void get_ini_file_settings();

@@ -429,7 +429,7 @@ bool DirExists(const char *dirname)
 	if (dwAttr == INVALID_FILE_ATTRIBUTES)
 		return false;
 
-	return (dwAttr & FILE_ATTRIBUTE_DIRECTORY);
+	return ((dwAttr & FILE_ATTRIBUTE_DIRECTORY) != 0);
 }
 
 void Log(const char *text, ...)
@@ -529,13 +529,6 @@ static int __page_write(void *_dest, const void *_src, uint32_t len)
 		if (!WriteProcessMemory(GetCurrentProcess(), dest, (void *)src, this_len, &write_len))
 			write_len = 0;
 
-		if (prot_changed)
-		{
-			DWORD	dummy;
-			//if (!VirtualProtect((void *)dest, this_len, prot_prev, &dummy))
-			//	Log("__page_write() could not restore original permissions for ptr %p", dest);
-		}
-
 		if ((int)write_len != this_len)
 			ret = 0;
 
@@ -576,13 +569,6 @@ static int __page_read(void *_dest, const void *_src, uint32_t len)
 
 		if (!ReadProcessMemory(GetCurrentProcess(), src, dest, this_len, &read_len))
 			read_len = 0;
-
-		if (prot_changed)
-		{
-			DWORD	dummy;
-			//if (!VirtualProtect((void *)src, this_len, prot_prev, &dummy))
-			//	Log("__page_read() could not restore original permissions for ptr %p", src);
-		}
 
 		if ((int)read_len != this_len)
 		{

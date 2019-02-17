@@ -199,12 +199,12 @@ bool gta_world_marker_get(float fPos[3])
 
 bool gta_map_marker_active(void)
 {
-	return (bool)*(uint32_t *)0xBA6774 != NULL;
+	return (bool)(*(uint32_t *)0xBA6774 != NULL != 0);
 }
 
 bool gta_menu_active(void)
 {
-	return (bool)*(uint32_t *)0xBA67A4 != NULL;
+	return (bool)(*(uint32_t *)0xBA67A4 != NULL != 0);
 }
 
 int gta_interior_id_get(void)

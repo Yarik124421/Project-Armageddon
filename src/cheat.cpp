@@ -128,7 +128,7 @@ void cheat_handle_coordmaster()
 
 	if (struct vehicle_info *info = vehicle_info_get(VEHICLE_SELF, 1))
 	{
-		if (!info || pGame->GetModelInfo(info->base.model_alt_id)->IsTrain()) return;
+		if (pGame->GetModelInfo(info->base.model_alt_id)->IsTrain()) return;
 		CVector vPos = info->base.m_CMatrix->vPos;
 		vehicle_info *tow_info = info;
 		float cam_rot = pGame->GetCamera()->GetCameraRotation();
@@ -816,7 +816,7 @@ void func_clickwarp()
 					GTAfunc_TogglePlayerControllable(false);
 					pCRMP->getMisc()->toggleSAMPCursor(menu.clickwarp = false);
 				}
-			} if (pCollision != nullptr) pCollision->Destroy();
+			} if (pCollision != nullptr) pCollision->Destroy(); //-V646
 		} 
 	}
 }
@@ -969,7 +969,7 @@ void VehicleSync(float fPos[3], float fSpeed[3], uint16_t VehicleID, int type)
 	float kek[3] = { 0.1f, 0.1f, 0.1f };
 	//stInCarData InCarData;
 	stPassengerData PassengerData;
-	if (type < 0 && type > 2)
+	if (type < 0 || type > 2)
 		type = 0;
 	vehicle_info *vinfo = pCRMP->getVehicles()->getGTAVehicle(VehicleID);
 	switch (type)
@@ -1071,7 +1071,7 @@ void OL_CarShooter()
 				vehicle_info *info = pCRMP->getVehicles()->getGTAVehicle(VehicleID);
 				CVehicle *pCVehicle = pPools->GetVehicle((PDWORD)info);
 				if (isBadPtr_GTA_pVehicle(pCVehicle)) return;
-				if (info->base.model_alt_id < 400 && info->base.model_alt_id > 611) return;
+				if (info->base.model_alt_id < 400 || info->base.model_alt_id > 611) return;
 				CCamera *pCamera = pGame->GetCamera();
 				CVector vecSpeed = *pCamera->GetCam(pCamera->GetActiveCam())->GetFront() * ini.exclusive_speed;
 				CVector vecCoord = *pPedSelf->GetPosition() + vecSpeed * 5.f;
@@ -1130,7 +1130,7 @@ void OL_CarPick()
 						if (info == NULL) return;
 						CVehicle *pCVehicle = pPools->GetVehicle((PDWORD)info);
 						if (isBadPtr_GTA_pVehicle(pCVehicle)) return;
-						if (info->base.model_alt_id < 400 && info->base.model_alt_id > 611) return;
+						if (info->base.model_alt_id < 400 || info->base.model_alt_id > 611) return;
 						CCamera *pCamera = pGame->GetCamera();
 						CVector vecSpeed = *pCamera->GetCam(pCamera->GetActiveCam())->GetFront() * 2.5f;
 						CVector vecCoord = *pPedSelf->GetPosition() + vecSpeed * 5.f;
@@ -1167,7 +1167,7 @@ void func_carshot()
 			if (isKeyDown('W')) {
 				vinfo->speed[0] = sinf(fRotation) * fSpeed;
 				vinfo->speed[1] = cosf(fRotation) * fSpeed;
-			}if (isKeyDown('S')) {
+			} else if (isKeyDown('S')) {
 				vinfo->speed[0] = sinf(fRotation) * -0.5;
 				vinfo->speed[1] = cosf(fRotation) * -0.5;
 			}

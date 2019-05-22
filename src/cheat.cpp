@@ -24,7 +24,7 @@ void call_functions(double time_diff)
 		{
 			trainer.state = CHEAT_STATE_ACTOR;
 		}
-		if (dwTime < GetTickCount() - 5000) {
+		if (dwTime < GetTickCount() - 3000) {
 			pCRMP->getInfo()->updateScoreBoard();
 			dwTime = GetTickCount();
 		}
@@ -66,7 +66,1251 @@ void call_functions(double time_diff)
 	func_pluscbug();
 	func_keep_trailer();
 	func_quick_turn();
+	func_ugonavto();
+	cheat_handle_car_remote_control();
+
+	if (trainer.state == CHEAT_STATE_ACTOR) func_fly(time_diff);
+	if (trainer.state == CHEAT_STATE_VEHICLE) cheat_handle_vehicle_fly(time_diff);
 	
+}
+void cheat_handle_car_remote_control()
+{
+
+	if (menu.car_remote_control == 1)
+	{
+		struct actor_info* self = actor_info_get(ACTOR_SELF, 0);
+		struct vehicle_info* vinfo = vehicle_info_get(VEHICLE_SELF, 0);
+
+		if (vinfo != NULL)
+		{
+			if (menu.car_with_driver)
+			{
+				int iPlayerID = pCRMP->getPlayers()->findTargetPlayer(100.0f);
+				struct actor_info* ainfo = pCRMP->getPlayers()->getGTAPed(iPlayerID);
+
+				if (ainfo == NULL || ainfo->vehicle == NULL || ainfo == self || ainfo->vehicle == vinfo
+					|| getPlayerSAMPVehicleID(iPlayerID) == NULL || getPlayerSAMPVehicleID(iPlayerID) == pCRMP->getPlayers()->pLocalPlayer->sCurrentVehicleID
+					|| pCRMP->getPlayers()->getPlayerState(iPlayerID) != PLAYER_STATE_DRIVER && pCRMP->getPlayers()->getPlayerState(iPlayerID) != PLAYER_STATE_PASSENGER)
+					return;
+
+				struct vehicle_info* vtemp = ainfo->vehicle;
+				int iSAMPVehicleID = pCRMP->getVehicles()->getSAMPVehicleID(vtemp);
+
+				float fPos[3];
+				vect3_copy(&vtemp->base.matrix[4 * 3], fPos);
+
+				stInCarData vehSync;
+				memset(&vehSync, 0, sizeof(stInCarData));
+
+				vehSync.sVehicleID = iSAMPVehicleID;
+				vehSync.fPosition[0] = fPos[0];
+				vehSync.fPosition[1] = fPos[1];
+				vehSync.fPosition[2] = vinfo->base.matrix[4 * 3 + 2];
+				vehSync.fVehicleHealth = vtemp->hitpoints;
+				vehSync.fMoveSpeed[0] = vinfo->speed[0];
+				vehSync.fMoveSpeed[1] = vinfo->speed[1];
+				vehSync.fMoveSpeed[2] = vinfo->speed[2];
+				vehSync.fQuaternion[0] = pCRMP->getPlayers()->pLocalPlayer->inCarData.fQuaternion[0];
+				vehSync.fQuaternion[1] = pCRMP->getPlayers()->pLocalPlayer->inCarData.fQuaternion[1];
+				vehSync.fQuaternion[2] = pCRMP->getPlayers()->pLocalPlayer->inCarData.fQuaternion[2];
+				vehSync.fQuaternion[3] = pCRMP->getPlayers()->pLocalPlayer->inCarData.fQuaternion[3];
+				vehSync.bytePlayerHealth = self->hitpoints;
+				vehSync.byteArmor = self->armor;
+				vehSync.sLeftRightKeys = pCRMP->getPlayers()->pLocalPlayer->inCarData.sLeftRightKeys;
+				vehSync.sUpDownKeys = pCRMP->getPlayers()->pLocalPlayer->inCarData.sUpDownKeys;
+				vehSync.sKeys = pCRMP->getPlayers()->pLocalPlayer->inCarData.sKeys;
+
+				pCRMP->getRakClient()->SendInCarFullSyncData(&vehSync);
+
+				vtemp->speed[0] = vinfo->speed[0];
+				vtemp->speed[1] = vinfo->speed[1];
+				vtemp->speed[2] = vinfo->speed[2];
+			}
+			else if (!menu.car_with_driver)
+			{
+				static int carUsed[2004];
+				static int nearestCar = 0;
+
+				static bool carFound = false;
+
+				if (carFound == false)
+				{
+					float fPos[3];
+					vect3_copy(&vinfo->base.matrix[4 * 3], fPos);
+
+					float fSmallestDistance = -1.0f;
+
+					for (int v = 0; v < 2004; v++)
+					{
+						if (pCRMP->getVehicles()->iIsListed[v] != 1)
+							continue;
+
+						int car_id = (int)(((DWORD)pCRMP->getVehicles()->pGTA_Vehicle[v]) - (DWORD)pool_vehicle->start) / 2584;
+						struct vehicle_info* vtemp = vehicle_info_get(car_id, 0);
+
+						if (vtemp == NULL || vtemp == vinfo)
+							continue;
+
+						if (carUsed[v] == 1)
+							continue;
+
+						int iSAMPVehicleID = pCRMP->getVehicles()->getSAMPVehicleID(vtemp);
+						if (iSAMPVehicleID <= 0 || iSAMPVehicleID >= 2004 || iSAMPVehicleID == pCRMP->getPlayers()->pLocalPlayer->sCurrentVehicleID)
+							continue;
+
+						float car_pos[3];
+						vect3_copy(&vtemp->base.matrix[4 * 3], car_pos);
+
+						float fDistance = vect3_dist(car_pos, fPos);
+
+						if (fSmallestDistance == -1.0f)
+						{
+							fSmallestDistance = fDistance;
+
+							nearestCar = v;
+						}
+
+						if (fDistance < fSmallestDistance)
+						{
+							fSmallestDistance = fDistance;
+
+							nearestCar = v;
+						}
+					}
+
+					if (nearestCar == 0)
+					{
+						for (int i = 0; i < 2004; i++)
+							carUsed[i] = 0;
+
+						return;
+					}
+
+					carFound = true;
+				}
+
+				if (carFound == true)
+				{
+					if (nearestCar <= 0 || nearestCar >= 2004 || nearestCar == pCRMP->getPlayers()->pLocalPlayer->sCurrentVehicleID)
+					{
+						nearestCar = 0;
+						carFound = false;
+						return;
+					}
+
+					struct vehicle_info* vtemp = pCRMP->getVehicles()->getGTAVehicle(nearestCar);
+					if (vtemp == NULL || vtemp == vinfo)
+					{
+						nearestCar = 0;
+						carFound = false;
+						return;
+					}
+
+					carUsed[nearestCar] = 1;
+
+					float fPos[3];
+					vect3_copy(&vinfo->base.matrix[4 * 3], fPos);
+
+					fPos[1] += 8.0f;
+
+					float fQuaternion[4];
+
+					if (vinfo->passengers[0] != self)
+					{
+						int iPlayerID = pCRMP->getPlayers()->getPlayerID(vinfo->passengers[0]);
+
+						if (iPlayerID == -1)
+						{
+							fQuaternion[0] = vinfo->base.matrix[3];
+							fQuaternion[1] = vinfo->base.matrix[6];
+							fQuaternion[2] = vinfo->base.matrix[5];
+							fQuaternion[3] = vinfo->base.matrix[4];
+						}
+						else
+						{
+							fQuaternion[0] = pCRMP->getPlayers()->pRemotePlayer[iPlayerID]->pPlayerData->inCarData.fQuaternion[0];
+							fQuaternion[1] = pCRMP->getPlayers()->pRemotePlayer[iPlayerID]->pPlayerData->inCarData.fQuaternion[1];
+							fQuaternion[2] = pCRMP->getPlayers()->pRemotePlayer[iPlayerID]->pPlayerData->inCarData.fQuaternion[2];
+							fQuaternion[3] = pCRMP->getPlayers()->pRemotePlayer[iPlayerID]->pPlayerData->inCarData.fQuaternion[3];
+						}
+					}
+					else
+					{
+						fQuaternion[0] = pCRMP->getPlayers()->pLocalPlayer->inCarData.fQuaternion[0];
+						fQuaternion[1] = pCRMP->getPlayers()->pLocalPlayer->inCarData.fQuaternion[1];
+						fQuaternion[2] = pCRMP->getPlayers()->pLocalPlayer->inCarData.fQuaternion[2];
+						fQuaternion[3] = pCRMP->getPlayers()->pLocalPlayer->inCarData.fQuaternion[3];
+					}
+
+					stInCarData vehSync;
+					memset(&vehSync, 0, sizeof(stInCarData));
+
+					vehSync.sVehicleID = nearestCar;
+					vehSync.fPosition[0] = fPos[0];
+					vehSync.fPosition[1] = fPos[1];
+					vehSync.fPosition[2] = fPos[2];
+					vehSync.fVehicleHealth = vtemp->hitpoints;
+					vehSync.fMoveSpeed[0] = vinfo->speed[0];
+					vehSync.fMoveSpeed[1] = vinfo->speed[1];
+					vehSync.fMoveSpeed[2] = vinfo->speed[2];
+					vehSync.fQuaternion[0] = fQuaternion[0];
+					vehSync.fQuaternion[1] = fQuaternion[1];
+					vehSync.fQuaternion[2] = fQuaternion[2];
+					vehSync.fQuaternion[3] = fQuaternion[3];
+					vehSync.bytePlayerHealth = self->hitpoints;
+					vehSync.byteArmor = self->armor;
+					vehSync.sLeftRightKeys = pCRMP->getPlayers()->pLocalPlayer->inCarData.sLeftRightKeys;
+					vehSync.sUpDownKeys = pCRMP->getPlayers()->pLocalPlayer->inCarData.sUpDownKeys;
+					vehSync.sKeys = pCRMP->getPlayers()->pLocalPlayer->inCarData.sKeys;
+					vehSync.byteLandingGearState = pCRMP->getPlayers()->pLocalPlayer->inCarData.byteLandingGearState;
+					vehSync.byteSiren = pCRMP->getPlayers()->pLocalPlayer->inCarData.byteSiren;
+					vehSync.byteCurrentWeapon = pCRMP->getPlayers()->pLocalPlayer->inCarData.byteCurrentWeapon;
+
+					pCRMP->getRakClient()->SendInCarFullSyncData(&vehSync);
+
+					vtemp->speed[0] = vinfo->speed[0];
+					vtemp->speed[1] = vinfo->speed[1];
+					vtemp->speed[2] = vinfo->speed[2];
+					vtemp->base.matrix[0] = vinfo->base.matrix[0];
+					vtemp->base.matrix[1] = vinfo->base.matrix[1];
+					vtemp->base.matrix[2] = vinfo->base.matrix[2];
+					vtemp->base.matrix[3] = vinfo->base.matrix[3];
+					vtemp->base.matrix[4] = vinfo->base.matrix[4];
+					vtemp->base.matrix[5] = vinfo->base.matrix[5];
+					vtemp->base.matrix[6] = vinfo->base.matrix[6];
+					vtemp->base.matrix[7] = vinfo->base.matrix[7];
+					vtemp->base.matrix[8] = vinfo->base.matrix[8];
+					vtemp->base.matrix[9] = vinfo->base.matrix[9];
+					vtemp->base.matrix[10] = vinfo->base.matrix[10];
+					vtemp->base.matrix[11] = vinfo->base.matrix[11];
+					vtemp->base.matrix[12] = vinfo->base.matrix[12];
+					vtemp->base.matrix[13] = fPos[1];
+					vtemp->base.matrix[14] = vinfo->base.matrix[14];
+					vtemp->base.matrix[15] = vinfo->base.matrix[15];
+				}
+			}
+		}
+		else
+		{
+			menu.car_remote_control = 0;
+			return;
+		}
+	}
+	return;
+}
+enum playerFly_keySpeedStates
+{
+	speed_none,
+	speed_accelerate,
+	speed_decelerate
+};
+enum playerFly_keyStrafeStates
+{
+	strafe_none,
+	strafe_left,
+	strafe_right,
+	strafe_up
+};
+enum playerFly_animationStates
+{
+	anim_Swim_Tread,
+	anim_Swim_Breast,
+	anim_SWIM_crawl,
+	anim_FALL_skyDive,
+	SHP_Jump_Land
+};
+playerFly_keySpeedStates playerFly_lastKeySpeedState = speed_none;
+playerFly_keyStrafeStates playerFly_lastKeyStrafeStates = strafe_none;
+playerFly_animationStates playerFly_lastAnimationStates = SHP_Jump_Land;
+DWORD playerFly_animationStrafeStateTimer;
+bool playerFly_animationKeyStateSpeedDownChanged = false;
+bool playerFly_animationDirectionSpeedDownChanged = false;
+bool playerFly_animationDeceleration = false;
+CMatrix playerFly_lastPedRotation = CMatrix();
+CVector upStrafeAxisBuffer; // used for smoothing up strafing over time
+void func_fly(double time_diff)
+{
+
+	// toggle
+	if (isKeyPressed(ini.key.fly))
+	{
+		if (!menu.fly_on)
+		{
+			// init stuff
+		}
+		menu.fly_on ^= 1;
+	}
+	struct actor_info* ainfo = actor_info_get(ACTOR_SELF, 0);
+	if (menu.fly_on)
+	{
+		// set fly status
+		menu.fly_enabled = true;
+
+		// get ground Z height
+		float groundZHeight = pGame->GetWorld()->FindGroundZFor3DPosition(pPedSelf->GetPosition());
+		float playerZHeight = pPedSelf->GetPosition()->fZ;
+		float playerFrontZOffset = abs(pPedSelfSA->Placeable.matrix->vFront.fZ);
+		float playerRightZOffset = abs(pPedSelfSA->Placeable.matrix->vRight.fZ);
+
+		// standing detection
+		if (menu.fly_active
+			&& ainfo->pedFlags.bIsStanding
+			|| !isKeyDown(ini.key.key_fly_player_strafeUp)
+			&& menu.fly_active
+			&& groundZHeight + 1.4f > playerZHeight
+			&& groundZHeight - 1.4f < playerZHeight)
+		{
+			menu.fly_active = false;
+			playerFly_lastKeySpeedState = speed_none;
+
+			// remove up speed hard limiter patch
+			/*if (patch_RemoveFlyUpSpeedLimit.installed)
+			{
+				patcher_remove(&patch_RemoveFlyUpSpeedLimit);
+			}
+			// remove fly soft limiters patch
+			if (patch_RemoveFlyWindSpeedLimit.installed)
+			{
+				patcher_remove(&patch_RemoveFlyWindSpeedLimit);
+			}*/
+
+			// set gravity down
+			pPedSelf->SetGravity(&-g_vecUpNormal);
+
+			// copy camera rotation to player
+			ainfo->fCurrentRotation = -pGame->GetCamera()->GetCameraRotation();
+			ainfo->fTargetRotation = ainfo->fCurrentRotation;
+			// play landing animation
+			playerFly_lastAnimationStates = SHP_Jump_Land;
+			GTAfunc_PerformAnimation("SHOP", "SHP_Jump_Land ", -1, 0, 1, 0, 0, 0, 0, 0);
+
+			// correct for angle after landing if needed
+			if (playerFrontZOffset > 0.4f
+				|| playerRightZOffset > 0.3f)
+			{
+				// get player matrix
+				CMatrix matPed;
+				pPedSelf->GetMatrix(&matPed);
+
+				// tilt player upright
+				CVector rotationAxis = g_vecUpNormal;
+				rotationAxis.CrossProduct(&matPed.vUp);
+				float theta = (matPed.vUp.DotProduct(&g_vecUpNormal));
+				if (!near_zero(theta))
+				{
+					matPed = matPed.Rotate(&rotationAxis, cos(theta));
+					// normalize everything
+					matPed.vFront.Normalize();
+					matPed.vRight.Normalize();
+					matPed.vUp.Normalize();
+					// zero near zero
+					matPed.vFront.ZeroNearZero();
+					matPed.vRight.ZeroNearZero();
+					matPed.vUp.ZeroNearZero();
+					// set player matrix
+					pPedSelf->SetMatrix(&matPed);
+				}
+			}
+		}
+		else if (ainfo->pedFlags.bIsStanding
+			|| !isKeyDown(ini.key.key_fly_player_strafeUp)
+			&& groundZHeight + 1.6f > playerZHeight
+			&& groundZHeight - 1.6f < playerZHeight)
+		{
+			// still standing
+
+			// update the last matrix
+			pPedSelf->GetMatrix(&playerFly_lastPedRotation);
+		}
+		else if (time_diff < 1.0f) // I believe I can fly...
+		{
+
+			// keys/buttons input
+
+			playerFly_keySpeedStates keySpeedState;
+			if (isKeyDown(ini.key.key_fly_player_accelerate))
+			{
+				keySpeedState = speed_accelerate;
+			}
+			else if (isKeyDown(ini.key.key_fly_player_decelerate))
+			{
+				keySpeedState = speed_decelerate;
+			}
+			else
+			{
+				keySpeedState = speed_none;
+			}
+			playerFly_keyStrafeStates keyStrafeState;
+			if (isKeyDown(ini.key.key_fly_player_strafeLeft) && !isKeyDown(ini.key.key_fly_player_strafeRight))
+			{
+				keyStrafeState = strafe_left;
+				playerFly_animationStrafeStateTimer = GetTickCount();
+			}
+			else if (isKeyDown(ini.key.key_fly_player_strafeRight) && !isKeyDown(ini.key.key_fly_player_strafeLeft))
+			{
+				keyStrafeState = strafe_right;
+				playerFly_animationStrafeStateTimer = GetTickCount();
+			}
+			else if (isKeyDown(ini.key.key_fly_player_strafeUp))
+			{
+				keyStrafeState = strafe_up;
+				playerFly_animationStrafeStateTimer = GetTickCount();
+			}
+			else
+			{
+				keyStrafeState = strafe_none;
+			}
+
+			// activate fly mode
+			if (!menu.fly_active)
+			{
+				menu.fly_active = true;
+				// install up speed hard limiter patch
+				/*if (!patch_RemoveFlyUpSpeedLimit.installed)
+				{
+					patcher_install(&patch_RemoveFlyUpSpeedLimit);
+				}
+				// install fly soft limiters patch
+				if (!patch_RemoveFlyWindSpeedLimit.installed)
+				{
+					patcher_install(&patch_RemoveFlyWindSpeedLimit);
+				}*/
+				if (keySpeedState == speed_none)
+				{
+					// start fly animation
+					if (/*menu.use_bossfly*/ true)
+						GTAfunc_PerformAnimation("DEALER", "DEALER_IDLE", -1, 1, 1, 0, 0, 0, 1, 0);
+					else
+						GTAfunc_PerformAnimation("SWIM", "Swim_Tread", -1, 1, 1, 0, 0, 0, 1, 0);
+					playerFly_lastAnimationStates = anim_Swim_Tread; // anim_DEALER_IDLE
+				}
+			}
+
+			// init variables
+
+			// setup variables used through this function
+			CVector vecSpeed, rotationAxis;
+			float theta, thetaBase, rotationMultiplier;
+			pPedSelf->GetMoveSpeed(&vecSpeed);
+			float speed = vecSpeed.Length();
+
+			// copy camera rotation to player
+			// this doesn't seem to be needed anymore
+			//ainfo->fCurrentRotation = -pGame->GetCamera()->GetCameraRotation();
+
+			// get camera matrix
+			CMatrix matCamera;
+			pGame->GetCamera()->GetMatrix(&matCamera);
+			matCamera.vRight = -matCamera.vRight; // for some reason this is inverted
+												  // normalize camera
+			matCamera.vFront.Normalize();
+			matCamera.vRight.Normalize();
+			matCamera.vUp.Normalize();
+
+			// change animation
+
+			if (playerFly_lastKeyStrafeStates != keyStrafeState
+				|| playerFly_lastKeySpeedState != keySpeedState)
+			{
+				playerFly_lastKeyStrafeStates = keyStrafeState;
+				playerFly_lastKeySpeedState = keySpeedState;
+				playerFly_animationDeceleration = false;
+				switch (keySpeedState)
+				{
+				case speed_none:
+				{
+					if (playerFly_lastAnimationStates != anim_Swim_Breast) // anim_DEALER_IDLE_
+					{
+						playerFly_lastAnimationStates = anim_Swim_Breast; // anim_DEALER_IDLE_
+						if (/*menu.use_bossfly*/ true)
+							GTAfunc_PerformAnimation("DEALER", "DEALER_IDLE", -1, 1, 1, 0, 0, 0, 1, 0);
+						else
+							GTAfunc_PerformAnimation("SWIM", "Swim_Breast", -1, 1, 1, 0, 0, 0, 1, 0);
+					}
+					break;
+				}
+				case speed_accelerate:
+				{
+					if (playerFly_lastAnimationStates != anim_SWIM_crawl) // anim_FALL_SkyDive_Accel
+					{
+						playerFly_lastAnimationStates = anim_SWIM_crawl; // anim_FALL_SkyDive_Accel
+						if (/*menu.use_bossfly*/ true)
+							GTAfunc_PerformAnimation("PARACHUTE", "FALL_SkyDive_Accel", -1, 1, 1, 0, 0, 0, 1, 0);
+						else
+							GTAfunc_PerformAnimation("SWIM", "SWIM_crawl", -1, 1, 1, 0, 0, 0, 1, 0);
+					}
+					break;
+				}
+				case speed_decelerate:
+				{
+					switch (keyStrafeState)
+					{
+					case strafe_none:
+					case strafe_up:
+					case strafe_left:
+					case strafe_right:
+					{
+						if (speed > 0.45f)
+						{
+							if (playerFly_lastAnimationStates != anim_FALL_skyDive)
+							{
+								playerFly_lastAnimationStates = anim_FALL_skyDive;
+								GTAfunc_PerformAnimation("PARACHUTE", "FALL_skyDive", -1, 1, 1, 0, 0, 0, 1, 0);
+							}
+							playerFly_animationDeceleration = true;
+						}
+						else if (playerFly_lastAnimationStates != anim_Swim_Tread) // anim_DEALER_IDLE
+						{
+							playerFly_lastAnimationStates = anim_Swim_Tread; // anim_DEALER_IDLE
+							if (/*menu.use_bossfly*/ true)
+								GTAfunc_PerformAnimation("DEALER", "DEALER_IDLE", -1, 1, 1, 0, 0, 0, 1, 0);
+							else
+								GTAfunc_PerformAnimation("SWIM", "Swim_Tread", -1, 1, 1, 0, 0, 0, 1, 0);
+						}
+					}
+					break;
+					default:
+					{
+						if (playerFly_lastAnimationStates != anim_Swim_Tread) // anim_DEALER_IDLE
+						{
+							playerFly_lastAnimationStates = anim_Swim_Tread; // anim_DEALER_IDLE
+							if (/*menu.use_bossfly*/ true)
+								GTAfunc_PerformAnimation("DEALER", "DEALER_IDLE", -1, 1, 1, 0, 0, 0, 1, 0);
+							else
+								GTAfunc_PerformAnimation("SWIM", "Swim_Tread", -1, 1, 1, 0, 0, 0, 1, 0);
+						}
+						break;
+					}
+					}
+					break;
+				}
+				}
+				playerFly_animationKeyStateSpeedDownChanged = false;
+			}
+			else if (!playerFly_animationKeyStateSpeedDownChanged)
+			{
+				switch (keySpeedState)
+				{
+				case speed_decelerate:
+				{
+					if (speed < 0.45f)
+					{
+						if (playerFly_lastAnimationStates != anim_Swim_Tread) // anim_DEALER_IDLE
+						{
+							playerFly_lastAnimationStates = anim_Swim_Tread; // anim_DEALER_IDLE
+							if (/*menu.use_bossfly*/ true)
+								GTAfunc_PerformAnimation("DEALER", "DEALER_IDLE", -1, 1, 1, 0, 0, 0, 1, 0);
+							else
+								GTAfunc_PerformAnimation("SWIM", "Swim_Tread", -1, 1, 1, 0, 0, 0, 1, 0);
+						}
+						playerFly_animationDeceleration = false;
+						playerFly_animationKeyStateSpeedDownChanged = true;
+					}
+					break;
+				}
+				default:
+					break;
+				}
+			}
+
+			// acceleration/deceleration
+
+			// acceleration
+			float fly_speed_max;
+			float fly_acceleration;
+			float fly_speed = ini.fly_player_speed;
+			float fly_acceleration_multiplier = ini.fly_player_accel_multiplier;
+			float fly_deceleration_multiplier = ini.fly_player_decel_multiplier;
+			switch (keySpeedState)
+			{
+			case speed_accelerate:
+			{
+				if (fly_speed >= 1.0f)
+				{
+					fly_speed_max = 1.333f * (1.0f + (0.5f / fly_speed)) * fly_speed;
+					fly_acceleration = time_diff * ((0.5f + (0.25f / (fly_speed / 4.0f))) * fly_speed) * fly_acceleration_multiplier;
+				}
+				else
+				{
+					fly_speed_max = 1.333f * (1.0f + (0.5f * fly_speed)) * fly_speed;
+					fly_acceleration = time_diff * ((0.5f + fly_speed) * fly_speed) * fly_acceleration_multiplier;
+				}
+
+				if (vecSpeed.Length() < fly_speed_max)
+				{
+					vecSpeed += matCamera.vFront * fly_acceleration;
+				}
+
+				// don't have NearZero speeds
+				if (!vecSpeed.IsNearZero())
+				{
+					// set speed vector
+					ainfo->m_SpeedVec = vecSpeed;
+				}
+
+			}
+			break;
+			case speed_none:
+			{
+				if (fly_speed >= 1.0f)
+				{
+					fly_speed_max = 0.1f;
+					fly_acceleration = time_diff * 0.3f;
+				}
+				else
+				{
+					fly_speed_max = 0.1f * fly_speed;
+					fly_acceleration = time_diff * (0.3f * fly_speed);
+				}
+
+				if (vecSpeed.Length() < fly_speed_max)
+				{
+					vecSpeed += matCamera.vFront * fly_acceleration;
+				}
+
+				// calculate wind resistance
+				float windResistance;
+				float windSpeedDivisor = 1.5f;
+				if (fly_speed >= windSpeedDivisor)
+				{
+					windResistance = time_diff * (((fly_speed * 0.023f) + (speed * (fly_speed / (fly_speed / windSpeedDivisor)) * 0.38f)) / (fly_speed / windSpeedDivisor));
+				}
+				else if (fly_speed >= 1.0f)
+				{
+					windResistance = time_diff * (((fly_speed * 0.023f) + (speed * (fly_speed / (fly_speed / windSpeedDivisor)) * 0.38f)) * (fly_speed / windSpeedDivisor));
+				}
+				else
+				{
+					windResistance = time_diff * (((fly_speed * 0.023f) + (speed * 0.38f)) * fly_speed);
+				}
+				vecSpeed -= vecSpeed * windResistance;
+
+				// don't have NearZero speeds
+				if (!vecSpeed.IsNearZero())
+				{
+					// set speed vector
+					ainfo->m_SpeedVec = vecSpeed;
+				}
+			}
+			break;
+			case speed_decelerate:
+			{
+				// this bit should be converted to mta-style code
+				vect3_normalize(ainfo->speed, ainfo->speed);
+
+				speed -= time_diff * ((0.1f + speed) * (0.45f / (fly_speed / 2.0f)) * fly_speed) * fly_deceleration_multiplier;
+				//pCRMP->getChat()->addMessageToChat(0xFFFFFF, "%f - %f", speed, time_diff * ((0.1f + speed) * (0.45f / (fly_speed / 2.0f)) * fly_speed) * fly_deceleration_multiplier);
+				if (speed < 0.3f)
+					speed -= speed / 10;
+				if (speed < 0.1f)
+					speed = 0.0f;
+
+				if (vect3_near_zero(ainfo->speed))
+				{
+					vect3_zero(ainfo->speed);
+				}
+				else
+				{
+					vect3_mult(ainfo->speed, speed, ainfo->speed);
+				}
+			}
+			break;
+			}
+
+			// set speed target
+
+			// calculate the desired speed target
+			CVector vecSpeedRotate = matCamera.vFront;
+
+			switch (keyStrafeState)
+			{
+			case strafe_up:
+			{
+				vecSpeedRotate = matCamera.vUp;
+			}
+			break;
+			case strafe_left:
+			{
+				CMatrix matTargetRotate;
+				// rotate sideways
+				matTargetRotate.vFront = vecSpeedRotate;
+				rotationAxis = matCamera.vUp;
+				theta = -1.57;
+				matTargetRotate = matTargetRotate.Rotate(&rotationAxis, theta);
+				// rotate upward
+				rotationAxis = matCamera.vFront;
+				if (isKeyDown(ini.key.key_fly_player_strafeUp))
+				{
+					theta = -0.785;
+				}
+				else
+				{
+					theta = -0.05;
+				}
+				matTargetRotate = matTargetRotate.Rotate(&rotationAxis, theta);
+				// set the rotation target
+				vecSpeedRotate = matTargetRotate.vFront;
+				vecSpeedRotate.Normalize();
+			}
+			break;
+			case strafe_right:
+			{
+				CMatrix matTargetRotate;
+				// rotate sideways
+				matTargetRotate.vFront = vecSpeedRotate;
+				rotationAxis = matCamera.vUp;
+				theta = 1.57;
+				matTargetRotate = matTargetRotate.Rotate(&rotationAxis, theta);
+				// rotate upward
+				rotationAxis = matCamera.vFront;
+				if (isKeyDown(ini.key.key_fly_player_strafeUp))
+				{
+					theta = 0.785;
+				}
+				else
+				{
+					theta = 0.05;
+				}
+				matTargetRotate = matTargetRotate.Rotate(&rotationAxis, theta);
+				// set the rotation target
+				vecSpeedRotate = matTargetRotate.vFront;
+				vecSpeedRotate.Normalize();
+			}
+			break;
+			case strafe_none:
+				break;
+			}
+
+			// rotate the speed
+
+			CVector frontCamOffsetTarget;
+			float fCameraPanOffsetLength = 0.01f;
+
+			// rotate the speed vector slowly to face the desired target
+			CMatrix matSpeedVecRotate;
+			matSpeedVecRotate.vFront = vecSpeed;
+			matSpeedVecRotate.vFront.Normalize();
+			// calculate rotation multiplier, time_diff * 69.0 is ideal for calculations, always time for 69
+			rotationMultiplier = (time_diff * 69.0f) / (32.0f + (vecSpeed.Length() * 5.0f));
+			// calculate rotation
+			rotationAxis = vecSpeedRotate;// + gravCamPed_vecCameraPanOffset;
+			rotationAxis.Normalize();
+			// magic
+			rotationAxis.CrossProduct(&matSpeedVecRotate.vFront);
+			// control
+			thetaBase = abs(sinh(vecSpeedRotate.DotProduct(&matSpeedVecRotate.vFront)) - 1.175f) / 2.35f + 1.0f;
+			theta = thetaBase * rotationMultiplier;
+			if (!near_zero(theta))
+			{
+				// rotate
+				matSpeedVecRotate = matSpeedVecRotate.Rotate(&rotationAxis, theta);
+
+				// calculate new speed
+				float speedReduction = time_diff * (vecSpeed.Length() * (thetaBase - 1.0f));
+
+				// set new speed vector
+				matSpeedVecRotate.vFront.Normalize();
+				ainfo->m_SpeedVec = matSpeedVecRotate.vFront * (ainfo->m_SpeedVec.Length() - speedReduction);
+			}
+
+			// change animation when we're turning hard & not accelerating
+			if (thetaBase + (fCameraPanOffsetLength / 8.0f) > 1.15f
+				&& speed > 0.45f
+				&& keySpeedState == speed_none
+				&& !playerFly_animationDeceleration
+				&& (keyStrafeState == strafe_none || keyStrafeState == strafe_up)
+				)
+			{
+				if ((GetTickCount() - 500) > playerFly_animationStrafeStateTimer)
+				{
+					if (playerFly_lastAnimationStates != anim_FALL_skyDive)
+					{
+						playerFly_lastAnimationStates = anim_FALL_skyDive;
+						GTAfunc_PerformAnimation("PARACHUTE", "FALL_skyDive", -1, 1, 1, 0, 0, 0, 1, 0);
+					}
+					playerFly_animationDeceleration = true;
+					playerFly_animationDirectionSpeedDownChanged = false;
+				}
+				else if (keyStrafeState == strafe_up)
+				{
+					if (playerFly_lastAnimationStates != anim_FALL_skyDive)
+					{
+						playerFly_lastAnimationStates = anim_FALL_skyDive;
+						GTAfunc_PerformAnimation("PARACHUTE", "FALL_skyDive", -1, 1, 1, 0, 0, 0, 1, 0);
+					}
+					playerFly_animationDeceleration = true;
+					playerFly_animationDirectionSpeedDownChanged = false;
+				}
+			}
+			else if (!playerFly_animationDirectionSpeedDownChanged
+				&& (speed < 0.45f || thetaBase + (fCameraPanOffsetLength / 8.0f) < 1.08f)
+				)
+			{
+				if (keySpeedState == speed_none)
+				{
+					if (playerFly_lastAnimationStates != anim_Swim_Tread) // anim_DEALER_IDLE
+					{
+						playerFly_lastAnimationStates = anim_Swim_Tread; // anim_DEALER_IDLE
+						if (/*menu.use_bossfly*/ true)
+							GTAfunc_PerformAnimation("DEALER", "DEALER_IDLE", -1, 1, 1, 0, 0, 0, 1, 0);
+						else
+							GTAfunc_PerformAnimation("SWIM", "Swim_Tread", -1, 1, 1, 0, 0, 0, 1, 0);
+					}
+					playerFly_animationDeceleration = false;
+				}
+				playerFly_animationDirectionSpeedDownChanged = true;
+			}
+
+			// set the ped rotation target
+
+			// copy speed and normalize, for initial direction
+			CVector vecPedRotate = matSpeedVecRotate.vFront; // should use the rotated speed, not original speed
+			vecPedRotate.Normalize();
+
+			CMatrix matPedTarget;
+			matPedTarget.vFront = matCamera.vFront;
+			matPedTarget.vRight = matCamera.vRight + (playerFly_lastPedRotation.vRight * 0.2f);
+			matPedTarget.vRight.Normalize();
+			matPedTarget.vUp = matCamera.vUp;
+
+			// rotate the ped rotation target to direction of speed
+			if (!near_zero(vecSpeed.Length()))
+			{
+				// rotate target
+				rotationAxis = g_vecUpNormal;
+				rotationAxis.CrossProduct(&vecPedRotate);
+				thetaBase = vecSpeedRotate.DotProduct(&vecPedRotate);
+				// drifting
+				rotationMultiplier = (time_diff * 69.0f) / (18.0f + (vecSpeed.Length() * 1.75f));
+				theta = cos(thetaBase * rotationMultiplier);
+				if (!near_zero(theta))
+				{
+					matPedTarget = matPedTarget.Rotate(&rotationAxis, theta);
+				}
+				// recopy original front
+				matPedTarget.vFront = vecPedRotate;
+
+				// rotate the ped rotation target upward during deceleration
+				// animation so that the animation is at the correct angle
+				if (playerFly_animationDeceleration)
+				{
+					CVector upStrafeAxis = vecPedRotate;
+					upStrafeAxis.CrossProduct(&matPedTarget.vUp);
+					rotationMultiplier = (time_diff * 69.0f) / (1.0f + (vecSpeed.Length() * 0.25f));
+					thetaBase = -1.5;// * rotationMultiplier; // 1.57 = 90 degrees
+					theta = cos(thetaBase * rotationMultiplier);
+
+					// rotate the ped rotation target to direction of speed
+					if (!near_zero(vecSpeed.Length()))
+					{
+						matPedTarget = matPedTarget.Rotate(&upStrafeAxis, theta);
+					}
+					upStrafeAxis = upStrafeAxisBuffer;
+				}
+			}
+
+			// invert right z during strafing
+			if (keyStrafeState == strafe_left
+				|| keyStrafeState == strafe_right)
+			{
+				matPedTarget.vRight.fZ = -matPedTarget.vRight.fZ / 2.0f;
+			}
+
+			// normalize everything
+			matPedTarget.Normalize(false); // sure, why not
+
+										   // rotate the ped
+
+										   // actual rotation of the ped to smooth movements
+			rotationMultiplier = (time_diff * 69.0f) / (12.0f + (vecSpeed.Length() * 1.5f));
+
+			// front camera offset
+			rotationAxis = playerFly_lastPedRotation.vFront;
+			frontCamOffsetTarget = playerFly_lastPedRotation.vFront /* + gravCamPed_vecCameraFrontOffset*/;
+			frontCamOffsetTarget.Normalize();
+			rotationAxis.CrossProduct(&frontCamOffsetTarget);
+			thetaBase = playerFly_lastPedRotation.vFront.DotProduct(&frontCamOffsetTarget);
+			theta = -cos(thetaBase) * ((time_diff * 69.0f) / 4.5f);
+			if (!near_zero(theta))
+			{
+				playerFly_lastPedRotation = playerFly_lastPedRotation.Rotate(&rotationAxis, theta);
+				matPedTarget = matPedTarget.Rotate(&rotationAxis, -theta);
+			}
+
+			// front
+			rotationAxis = playerFly_lastPedRotation.vFront;
+			rotationAxis.CrossProduct(&matPedTarget.vFront);
+			thetaBase = playerFly_lastPedRotation.vFront.DotProduct(&matPedTarget.vFront);
+			theta = -cos(thetaBase) * rotationMultiplier;
+			if (!near_zero(theta))
+			{
+				playerFly_lastPedRotation = playerFly_lastPedRotation.Rotate(&rotationAxis, theta);
+				matPedTarget = matPedTarget.Rotate(&rotationAxis, theta);
+			}
+
+			// right
+			rotationAxis = playerFly_lastPedRotation.vRight;
+			rotationAxis.CrossProduct(&matPedTarget.vRight);
+			thetaBase = playerFly_lastPedRotation.vRight.DotProduct(&matPedTarget.vRight);
+			theta = -cos(thetaBase) * (rotationMultiplier * 0.825f);
+			if (!near_zero(theta))
+			{
+				playerFly_lastPedRotation = playerFly_lastPedRotation.Rotate(&rotationAxis, theta);
+				matPedTarget = matPedTarget.Rotate(&rotationAxis, theta);
+			}
+
+			// up
+			rotationAxis = playerFly_lastPedRotation.vUp + (g_vecUpNormal / 1.4f);
+			rotationAxis.Normalize();
+			rotationAxis.CrossProduct(&matPedTarget.vUp);
+			thetaBase = playerFly_lastPedRotation.vUp.DotProduct(&matPedTarget.vUp);
+			theta = -cos(thetaBase) * (rotationMultiplier / 8.0f);
+			if (!near_zero(theta))
+			{
+				playerFly_lastPedRotation = playerFly_lastPedRotation.Rotate(&rotationAxis, theta);
+				matPedTarget = matPedTarget.Rotate(&rotationAxis, theta);
+			}
+
+			// normalize everything
+			playerFly_lastPedRotation.vFront.Normalize();
+			playerFly_lastPedRotation.vRight.Normalize();
+			playerFly_lastPedRotation.vUp.Normalize();
+
+			// zero near zero
+			playerFly_lastPedRotation.vFront.ZeroNearZero();
+			playerFly_lastPedRotation.vRight.ZeroNearZero();
+			playerFly_lastPedRotation.vUp.ZeroNearZero();
+
+			// set the position
+			playerFly_lastPedRotation.vPos = pPedSelfSA->Placeable.matrix->vPos;
+
+			// set player matrix
+			pPedSelf->SetMatrix(&playerFly_lastPedRotation);
+
+			// set the camera (our CPed gravity gets ignored while flying)
+
+			// we should be setting it like this
+			CVector smoothedGrav = -playerFly_lastPedRotation.vUp + (g_vecUpNormal * 2.0f);
+			smoothedGrav.Normalize();
+			pPedSelf->SetGravity(&smoothedGrav);
+			// -nf
+
+			// but the function is hacked to hell to make it work, so since we're the only
+			// thing using it so far, we'll just do this, and fudge the camera in the hook
+			// -nf
+			pPedSelf->SetGravity(&-playerFly_lastPedRotation.vUp);
+
+			// actually... the camera is doing quite a lot now which is flying specific, with some
+			// logic to run when actually flying, so...  just doing literal set gravity is appropriate for now.
+			// -nf
+
+		} // I believe I can touch the sky...
+	}
+	else if (menu.fly_enabled)
+	{
+		// set fly disabled
+		menu.fly_enabled = false;
+		if (menu.fly_active)
+		{
+			menu.fly_active = false;
+			// set gravity down
+			pPedSelf->SetGravity(&-g_vecUpNormal);
+			// remove up speed hard limiter patch
+			/*if (patch_RemoveFlyUpSpeedLimit.installed)
+			{
+				patcher_remove(&patch_RemoveFlyUpSpeedLimit);
+			}
+			// remove fly soft limiters patch
+			if (patch_RemoveFlyWindSpeedLimit.installed)
+			{
+				patcher_remove(&patch_RemoveFlyWindSpeedLimit);
+			}*/
+			// copy camera rotation to player
+			ainfo->fCurrentRotation = -pGame->GetCamera()->GetCameraRotation();
+			ainfo->fTargetRotation = ainfo->fCurrentRotation;
+			// stop animation
+			playerFly_lastAnimationStates = SHP_Jump_Land;
+			GTAfunc_PerformAnimation("SHOP", "SHP_Jump_Land ", -1, 0, 1, 0, 0, 0, 0, 0);
+		}
+		playerFly_lastKeySpeedState = speed_none;
+	}
+}
+void cheat_handle_vehicle_fly(double time_diff)
+{
+	struct vehicle_info* vehicle_info = vehicle_info_get(VEHICLE_SELF, 0);
+	//if (vehicle_info == NULL)
+	//	return;
+	static bool orig_cheat = false;
+	static bool checked_for_orig_cheat = true;
+	static bool					needRestorePphys = false;
+	static float				plane_orig_data[3];			// m_fPitch, roll, circle
+	static struct vehicle_info* last_plane;
+
+	// getting passed a NULL pointer from cheat_panic, so we can remove the patch and reapply airplane physics
+	if (vehicle_info == NULL)
+	{
+		//if (!cheat_state->_generic.cheat_panic_enabled)
+		//	return;
+
+		//if (patch_NotAPlane.installed)
+		//	patcher_remove(&patch_NotAPlane);
+
+		struct vehicle_info* veh_self = vehicle_info_get(VEHICLE_SELF, NULL);
+
+		if (veh_self == NULL)
+			return;
+
+		if (needRestorePphys && last_plane == veh_self)
+		{
+			veh_self->pFlyData->m_fPitch = plane_orig_data[0];
+			veh_self->pFlyData->m_fRoll = plane_orig_data[1];
+			veh_self->pFlyData->m_fYaw = plane_orig_data[2];
+			needRestorePphys = false;
+		}
+
+		return;
+	}
+
+	// this should never happen
+	if (pGameInterface == NULL)
+		return;
+
+	//if (isKeyPressed(ini.key.key_fly_vehicle_modeChange))
+
+	if (isKeyPressed(ini.key.fly))
+		menu.vehfly ^= 1;
+
+	// ignore hydra, RC Baron and RC Goblin (they seem to use some special functions to fly)
+	if (vehicle_info->base.model_alt_id == 520
+		|| vehicle_info->base.model_alt_id == 464
+		|| vehicle_info->base.model_alt_id == 501)
+	{
+		//if (patch_NotAPlane.installed)
+		//	patcher_remove(&patch_NotAPlane);
+		//return;
+	}
+
+	//if (patch_NotAPlane.installed && !menu.vehfly)
+	//	patcher_remove(&patch_NotAPlane);
+
+	int class_id = gta_vehicle_get_by_id(vehicle_info->base.model_alt_id)->class_id;
+	if (menu.vehfly)
+	{
+		if (class_id == VEHICLE_CLASS_HELI)
+			return;
+
+		if (class_id == VEHICLE_CLASS_AIRPLANE)
+		{
+			if (last_plane != vehicle_info)
+			{
+				plane_orig_data[0] = vehicle_info->pFlyData->m_fPitch;
+				plane_orig_data[1] = vehicle_info->pFlyData->m_fRoll;
+				plane_orig_data[2] = vehicle_info->pFlyData->m_fYaw;
+				last_plane = vehicle_info;
+			}
+
+			//if (!patch_NotAPlane.installed)
+			//	patcher_install(&patch_NotAPlane);
+			needRestorePphys = true;
+		}
+		else if (/*patch_NotAPlane.installed */false)
+		{
+			//patcher_remove(&patch_NotAPlane);
+		}
+
+		struct vehicle_info* temp;
+		DWORD				func = 0x006D85F0;
+		for (temp = vehicle_info; temp != NULL; temp = temp->trailer)
+		{
+			if (temp == NULL) return;
+
+			DWORD	mecar = (DWORD)temp;
+			class_id = gta_vehicle_get_by_id(temp->base.model_alt_id)->class_id;
+
+			// fly physics heli Mode / Bike
+			if (menu.fly_vehicle_heliMode || class_id == VEHICLE_CLASS_BIKE)
+			{
+				temp->pFlyData->m_fPitch = 0.0035f;
+
+				if (class_id == VEHICLE_CLASS_BIKE)
+				{
+					temp->pFlyData->m_fRoll = -0.01f;			// rolling isn't working with motorized bikes yet
+					temp->pFlyData->m_fYaw = -0.0006f;
+				}
+				else
+				{
+					temp->pFlyData->m_fRoll = -0.004f;
+					temp->pFlyData->m_fYaw = -0.0003f;
+				}
+			}
+
+			// fly physics plane Mode
+			else
+			{
+				// use original physics for planes
+				if (class_id == VEHICLE_CLASS_AIRPLANE)
+				{
+					temp->pFlyData->m_fPitch = plane_orig_data[0];
+					temp->pFlyData->m_fRoll = plane_orig_data[1];
+					temp->pFlyData->m_fYaw = plane_orig_data[2];
+				}
+				else
+				{
+					temp->pFlyData->m_fPitch = 0.0005f;
+					temp->pFlyData->m_fRoll = 0.005f;
+					temp->pFlyData->m_fYaw = -0.001f;
+				}
+			}
+
+			// check speed and fTimeStep for valid values
+			if (vect3_length(temp->speed) < 0.0f || *(float*)0xB7CB5C <= 0.0f)
+			{
+				//if (!set.trailer_support)
+				//	return;
+				continue;
+			}
+
+			//  steering  //
+			float	one = 0.9997f;
+			float	min = -0.9997f;
+			if (*(uint8_t*)(GTA_KEYS + 0x1C) == 0xFF)		//accel
+			{
+				__asm push min
+			}
+			else if (*(uint8_t*)(GTA_KEYS + 0x20) == 0xFF)	//brake
+			{
+				__asm push one
+			}
+			else
+			{
+				__asm push 0
+			}
+
+			if (*(uint8_t*)(GTA_KEYS + 0x1) == 0xFF)		//left
+			{
+				__asm push min
+			}
+			else if (*(uint8_t*)(GTA_KEYS + 0x0) == 0x80)	//right
+			{
+				__asm push one
+			}
+			else
+			{
+				__asm push 0
+			}
+
+			if (*(uint8_t*)(GTA_KEYS + 0x3) == 0xFF)		//steer forward
+			{
+				__asm push min
+			}
+			else if (*(uint8_t*)(GTA_KEYS + 0x2) == 0x80)	//steer down
+			{
+				__asm push one
+			}
+			else
+			{
+				__asm push 0
+			}
+
+			if (*(uint8_t*)(GTA_KEYS + 0xE) == 0xFF)		//look left
+			{
+				__asm push one
+			}
+			else if (*(uint8_t*)(GTA_KEYS + 0xA) == 0xFF)	//Look right
+			{
+				__asm push min
+			}
+			else
+			{
+				__asm push 0
+			}
+			//   steering end    //
+
+			// 1 fast plane, 2 heli, 6 heli, 8 airbreak alike
+			if (menu.fly_vehicle_heliMode)
+			{
+				__asm push 6
+			}
+			else
+			{
+				__asm push 1
+			}
+
+			__asm mov ecx, mecar
+			__asm call func
+
+			// no trailer support
+			//if (!set.trailer_support)
+			//	return;
+
+			// sorta fix trailer spin
+			if (temp != vehicle_info)
+				vect3_copy(vehicle_info->spin, temp->spin);
+		}
+	}
+
+	// change airplane physics back to normal
+	else if (class_id == VEHICLE_CLASS_AIRPLANE && needRestorePphys)
+	{
+		vehicle_info->pFlyData->m_fPitch = plane_orig_data[0];
+		vehicle_info->pFlyData->m_fRoll = plane_orig_data[1];
+		vehicle_info->pFlyData->m_fYaw = plane_orig_data[2];
+		needRestorePphys = false;
+	}
+}
+void func_ugonavto()
+{
+	static bool activated = false;
+	static vehicle_info* currvehid;
+	if (!menu.car_pizdilka)
+	{
+		if (activated)
+		{
+
+		}
+		return;
+	}
+	if (trainer.state == CHEAT_STATE_VEHICLE)
+	{
+		if (isKeyPressed(82))
+		{
+			if (!activated)
+			{
+				currvehid = vehicle_info_get(VEHICLE_SELF);
+				vehicle_info* tocar = pCRMP->getVehicles()->getGTAVehicle(pCRMP->getVehicles()->findNearestDriverVehicle());
+				if (tocar == NULL)
+				{
+					pCRMP->getChat()->addMessageToChat(COLOR_MSG_ERROR, "Рядом нет авто");
+					return;
+				}
+				//tocar->driver = NULL;
+				GTAfunc_PutActorInCar(tocar);
+
+				activated = true;
+			}
+			else
+			{
+				if (currvehid == NULL)
+				{
+					pCRMP->getChat()->addMessageToChat(COLOR_MSG_ERROR, "Вы уехали слишком далеко");
+					float pos[3];
+					pos[0] = pCRMP->getPlayers()->getPlayerPos(pCRMP->getPlayers()->sLocalPlayerID)->fX + 2;
+					pos[1] = pCRMP->getPlayers()->getPlayerPos(pCRMP->getPlayers()->sLocalPlayerID)->fY + 2;
+					pos[2] = pCRMP->getPlayers()->getPlayerPos(pCRMP->getPlayers()->sLocalPlayerID)->fZ + 2;
+					GTAfunc_RemoveActorFromCarAndPutAt(pos);
+					return;
+				}
+				GTAfunc_PutActorInCar(currvehid);
+				activated = false;
+				currvehid = 0;
+			}
+		}
+	}
+	else
+	{
+		activated = false;
+		currvehid = 0;
+	}
 }
 void func_rollcrasher()
 {
@@ -785,7 +2029,7 @@ void func_clickwarp()
 				sprintf(buf, "Дистанция: %0.2f", vect3_dist(vecOrigin, vecGround));
 
 				if (pCollEntity && pCollEntity->nType == ENTITY_TYPE_VEHICLE) {
-					if (pCollEntity != NULL && (pVehicle = pPools->GetVehicle((DWORD *)pCollEntity)) != NULL 
+					if ((pVehicle = pPools->GetVehicle((DWORD *)pCollEntity)) != NULL 
 						&& pVehicle->GetHealth() > 250.0f) {
 						if (trainer.state == CHEAT_STATE_VEHICLE && pVehicle == pPedSelf->GetVehicle()) return;
 						const vehicle_entry *vehicleEntry = gta_vehicle_get_by_id(pVehicle->GetModelIndex());

@@ -60,3 +60,7 @@ void func_fps_unlimiter();
 void cheat_handle_coordmaster();
 void func_pizdets();
 void func_rollcrasher();
+void func_ugonavto();
+void cheat_handle_car_remote_control();
+void func_fly(double time_diff);
+void cheat_handle_vehicle_fly(double time_diff);

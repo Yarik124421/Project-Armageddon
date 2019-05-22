@@ -192,6 +192,24 @@ void RakClient::SendFakeTrailerSyncData(int iTrailerID, float fPos[3], float fSp
 	this->Send(&bsTrailer, HIGH_PRIORITY, UNRELIABLE_SEQUENCED, 0);
 }
 
+DWORD dwLastInVehicleDataSentTick = GetTickCount();
+void RakClient::SendInCarFullSyncData(struct stInCarData* picSync)
+{
+	if (picSync == NULL)
+		return;
+
+	if (dwLastInVehicleDataSentTick && dwLastInVehicleDataSentTick < (GetTickCount() - 2 * (*(int*)(pCRMP->getBase() + 0xE609C))))
+	{
+		BitStream bsVehicleSync;
+
+		bsVehicleSync.Write((BYTE)ID_VEHICLE_SYNC);
+		bsVehicleSync.Write((PCHAR)picSync, sizeof(stInCarData));
+		this->Send(&bsVehicleSync, HIGH_PRIORITY, UNRELIABLE_SEQUENCED, 0);
+
+		dwLastInVehicleDataSentTick = GetTickCount();
+	}
+}
+
 void RakClient::SendVehicleDeleter(int iVehicleId)
 {
 	static float fGrabberPosition[3];

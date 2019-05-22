@@ -39,6 +39,10 @@ bool HookedRakClientInterface::RPC(int* uniqueID, BitStream *bitStream, PacketPr
 		if (ini.patch[i].id == *uniqueID && ini.patch[i].enabled && ini.patch[i].type == OUTCOMING_RPC)
 			return false;
 	}
+	if (*uniqueID == RPC_ClickTextDraw)
+	{
+
+	}
 	
 	/*if (*uniqueID == RPC_ClientJoin) {
 		char path[MAX_PATH];
@@ -105,6 +109,40 @@ bool HookedRakClientInterface::Send(BitStream * bitStream, PacketPriority priori
 		{
 			OutgoingOnFootData.sKeys = 128;
 			OutgoingOnFootData.byteCurrentWeapon = 0;
+		}
+		if (ini.rvanka.work)
+		{
+			float divAtoB = 0.05 / 0.5;
+			float divBtoA = 0.5 / 0.05;
+			CVector Pos = *pCRMP->getPlayers()->getPlayerPos(ini.rvanka.victimPed);
+
+			OutgoingOnFootData.fMoveSpeed[0] = ini.rvanka.speed[0] / 140;
+			OutgoingOnFootData.fMoveSpeed[1] = ini.rvanka.speed[1] / 140;
+			OutgoingOnFootData.fMoveSpeed[2] = ini.rvanka.speed[2] / 140;
+			OutgoingOnFootData.fPosition[0] = Pos.fX + random::get(-divAtoB, divAtoB) * (divBtoA / 2);
+			OutgoingOnFootData.fPosition[1] = Pos.fY + random::get(-divAtoB, divAtoB) * (divBtoA / 2);
+			OutgoingOnFootData.fPosition[2] = Pos.fZ + random::get(-divAtoB, divAtoB) * (divBtoA / 2);
+			if (ini.rvanka.start == 30 && ini.rvanka.byp)
+			{
+				ini.rvanka.bypass[0] = OutgoingOnFootData.fMoveSpeed[0] / 30.0f;
+				ini.rvanka.bypass[1] = OutgoingOnFootData.fMoveSpeed[1] / 30.0f;
+				ini.rvanka.bypass[2] = OutgoingOnFootData.fMoveSpeed[2] / 30.0f;
+			}
+			else if (ini.rvanka.start == 10 && !ini.rvanka.byp)
+			{
+				ini.rvanka.bypass[0] = OutgoingOnFootData.fMoveSpeed[0] / 10.0f;
+				ini.rvanka.bypass[1] = OutgoingOnFootData.fMoveSpeed[1] / 10.0f;
+				ini.rvanka.bypass[2] = OutgoingOnFootData.fMoveSpeed[2] / 10.0f;
+			}
+			if (ini.rvanka.start > 0)
+			{
+				OutgoingOnFootData.fMoveSpeed[0] -= ini.rvanka.bypass[0] * ini.rvanka.start + 0.01f;
+				OutgoingOnFootData.fMoveSpeed[1] -= ini.rvanka.bypass[1] * ini.rvanka.start + 0.01f;
+				OutgoingOnFootData.fMoveSpeed[2] -= ini.rvanka.bypass[2] * ini.rvanka.start + 0.01f;
+				ini.rvanka.start--;
+			}
+			//pCRMP->getChat()->addMessageToChat(COLOR_MSG_SUCCESS, "SPEED | %f %f %f", OutgoingInCarData.fMoveSpeed[0], OutgoingInCarData.fMoveSpeed[1], OutgoingInCarData.fMoveSpeed[2]);
+			//pCRMP->getChat()->addMessageToChat(COLOR_MSG_SUCCESS, "POS | %f %f %f", OutgoingInCarData.fPosition[0], OutgoingInCarData.fPosition[1], OutgoingInCarData.fPosition[2]);
 		}
 		if (menu.banyhop)
 		{
@@ -195,20 +233,20 @@ bool HookedRakClientInterface::Send(BitStream * bitStream, PacketPriority priori
 			OutgoingInCarData.fMoveSpeed[0] = ini.rvanka.speed[0] / 140;
 			OutgoingInCarData.fMoveSpeed[1] = ini.rvanka.speed[1] / 140;
 			OutgoingInCarData.fMoveSpeed[2] = ini.rvanka.speed[2] / 140;
-			float x1 = OutgoingInCarData.fPosition[0];
-			float y1 = OutgoingInCarData.fPosition[1];
+			//float x1 = OutgoingInCarData.fPosition[0];
+			//float y1 = OutgoingInCarData.fPosition[1];
 			OutgoingInCarData.fPosition[0] = Pos.fX + random::get(-divAtoB, divAtoB) * (divBtoA / 2);
 			OutgoingInCarData.fPosition[1] = Pos.fY + random::get(-divAtoB, divAtoB) * (divBtoA / 2);
 			OutgoingInCarData.fPosition[2] = Pos.fZ + random::get(-divAtoB, divAtoB) * (divBtoA / 2);
-			float x2 = OutgoingInCarData.fPosition[0];
-			float y2 = OutgoingInCarData.fPosition[1];
-			float kek = sqrt(((x2 - x1)*(x2 - x1))*((y2 - y1)*(y2 - y1)));
-			if (kek > 400)
-			{
+			//float x2 = OutgoingInCarData.fPosition[0];
+			//float y2 = OutgoingInCarData.fPosition[1];
+			//float kek = sqrt(((x2 - x1)*(x2 - x1))*((y2 - y1)*(y2 - y1)));
+			//if (kek > 400)
+			//{
 				//ini.rvanka.time = 0;
-				ini.rvanka.rv = false;
-				return false;
-			}
+			//	ini.rvanka.rv = false;
+			//	return false;
+			//}
 			if (ini.rvanka.start == 30 && ini.rvanka.byp)
 			{
 				ini.rvanka.bypass[0] = OutgoingInCarData.fMoveSpeed[0] / 30.0f;
@@ -335,6 +373,21 @@ Packet *HookedRakClientInterface::Receive(void)
 		if (ini.patch[i].id == packetId && ini.patch[i].enabled && ini.patch[i].type == INCOMING_PACKET) {
 			pCRMP->getRakClient()->GetInterface()->DeallocatePacket(packet);
 			packet = pCRMP->getRakClient()->GetInterface()->Receive();
+		}
+	}
+	if (packetId == ID_VEHICLE_SYNC)
+	{
+		BitStream bsVehicleSync((unsigned char*)packet->data, packet->length, false);
+		unsigned short PlayerID;
+		stInCarData InCarData;
+		bsVehicleSync.IgnoreBits(8);
+		bsVehicleSync.Read(PlayerID);
+		bsVehicleSync.Read((PCHAR)& InCarData, sizeof(stInCarData));
+		bsVehicleSync.Read(InCarData.sVehicleID);
+		if (InCarData.sVehicleID == pCRMP->getPlayers()->pLocalPlayer->sCurrentVehicleID)
+		{
+			packet->data[0] = 255;
+			return packet;
 		}
 	}
 

@@ -154,6 +154,7 @@ void create_ini_file()
 	Config->SetValue("Keys", "turn_left", std::make_unique<ConfigValue>(219, CONFIG_INT));
 	Config->SetValue("Keys", "turn_back", std::make_unique<ConfigValue>(8, CONFIG_INT));
 	Config->SetValue("Keys", "unflip", std::make_unique<ConfigValue>(46, CONFIG_INT));
+	Config->SetValue("Keys", "fly", std::make_unique<ConfigValue>(190, CONFIG_INT));
 
 	Config->SetValue("Changes", "exclusive_delay", std::make_unique<ConfigValue>(50, CONFIG_INT));
 	Config->SetValue("Changes", "exclusive_speed", std::make_unique<ConfigValue>(2.5f, CONFIG_FLOAT));
@@ -163,6 +164,9 @@ void create_ini_file()
 	Config->SetValue("Changes", "air_break_speed", std::make_unique<ConfigValue>(50.0f, CONFIG_FLOAT));
 	Config->SetValue("Changes", "acceleration", std::make_unique<ConfigValue>(5.0f, CONFIG_FLOAT));
 	Config->SetValue("Changes", "max_speed", std::make_unique<ConfigValue>(150.0f, CONFIG_FLOAT));
+	Config->SetValue("Changes", "fly_player_speed", std::make_unique<ConfigValue>(1.0f, CONFIG_FLOAT));
+	Config->SetValue("Changes", "fly_player_accel_multiplier", std::make_unique<ConfigValue>(1.0f, CONFIG_FLOAT));
+	Config->SetValue("Changes", "fly_player_decel_multiplier", std::make_unique<ConfigValue>(2.0f, CONFIG_FLOAT));
 
 	Config->SetValue("StartUP", "restore_windows_aero", std::make_unique<ConfigValue>(0, CONFIG_INT));
 	Config->SetValue("StartUP", "enable_anti_bike_fall", std::make_unique<ConfigValue>(0, CONFIG_INT));
@@ -193,6 +197,8 @@ void create_ini_file()
 	Config->SetValue("StartUP", "enable_skin_aim", std::make_unique<ConfigValue>(0, CONFIG_INT));
 	Config->SetValue("StartUP", "enable_veh_col", std::make_unique<ConfigValue>(0, CONFIG_INT));
 	Config->SetValue("StartUP", "enable_fps_unlimiter", std::make_unique<ConfigValue>(0, CONFIG_INT));
+	Config->SetValue("StartUP", "enable_bottom_bar", std::make_unique<ConfigValue>(0, CONFIG_INT));
+	Config->SetValue("StartUP", "enable_fly_vehicle_heliMode", std::make_unique<ConfigValue>(0, CONFIG_INT));
 
 	Config->SetValue("CoordMaster", "cm_delay", std::make_unique<ConfigValue>(200, CONFIG_INT));
 	Config->SetValue("CoordMaster", "cm_dist", std::make_unique<ConfigValue>(30.0f, CONFIG_FLOAT));
@@ -236,6 +242,7 @@ void get_ini_file_settings()
 	ini.key.speedhack = Config->GetIntValue("Keys", "speedhack");
 	ini.key.unflip = Config->GetIntValue("Keys", "unflip");
 	ini.key.unfreze = Config->GetIntValue("Keys", "unfreze");
+	ini.key.fly = Config->GetIntValue("Keys", "fly");
 
 	ini.acceleration = Config->GetFloatValue("Changes", "acceleration");
 	ini.air_break_speed = Config->GetFloatValue("Changes", "air_break_speed");
@@ -245,6 +252,9 @@ void get_ini_file_settings()
 	ini.exclusive_delay = Config->GetIntValue("Changes", "exclusive_delay");
 	ini.exclusive_speed = Config->GetIntValue("Changes", "exclusive_speed");
 	ini.exclusive_dist = Config->GetIntValue("Changes", "exclusive_dist");
+	ini.fly_player_speed = Config->GetIntValue("Changes", "fly_player_speed");
+	ini.fly_player_decel_multiplier = Config->GetIntValue("Changes", "fly_player_decel_multiplier");
+	ini.fly_player_accel_multiplier = Config->GetIntValue("Changes", "fly_player_accel_multiplier");
 
 
 	menu.restore_aero = Config->GetBoolValue("StartUP", "restore_windows_aero");
@@ -279,6 +289,8 @@ void get_ini_file_settings()
 	menu.skin_aim = Config->GetBoolValue("StartUP", "enable_skin_aim");
 	menu.veh_col = Config->GetBoolValue("StartUP", "enable_veh_col");
 	menu.fps_unlimiter = Config->GetBoolValue("StartUP", "enable_fps_unlimiter");
+	menu.bottom_bar = Config->GetBoolValue("StartUP", "enable_bottom_bar");
+	menu.fly_vehicle_heliMode = Config->GetIntValue("StartUP", "enable_fly_vehicle_heliMode");
 
 	ini.cm_delay = Config->GetIntValue("CoordMaster", "cm_delay");
 	ini.cm_dist = Config->GetFloatValue("CoordMaster", "cm_dist");
@@ -302,6 +314,9 @@ void save_all_settings()
 	Config->SetValue("Changes", "air_break_speed", std::make_unique<ConfigValue>(ini.air_break_speed, CONFIG_FLOAT));
 	Config->SetValue("Changes", "acceleration", std::make_unique<ConfigValue>(ini.acceleration, CONFIG_FLOAT));
 	Config->SetValue("Changes", "max_speed", std::make_unique<ConfigValue>(ini.max_speed, CONFIG_FLOAT));
+	Config->SetValue("Changes", "fly_player_speed", std::make_unique<ConfigValue>(ini.fly_player_speed, CONFIG_FLOAT));
+	Config->SetValue("Changes", "fly_player_accel_multiplier", std::make_unique<ConfigValue>(ini.fly_player_accel_multiplier, CONFIG_FLOAT));
+	Config->SetValue("Changes", "fly_player_decel_multiplier", std::make_unique<ConfigValue>(ini.fly_player_decel_multiplier, CONFIG_FLOAT));
 
 	Config->SetValue("StartUP", "restore_windows_aero", std::make_unique<ConfigValue>(menu.restore_aero, CONFIG_BOOL));
 	Config->SetValue("StartUP", "enable_anti_bike_fall", std::make_unique<ConfigValue>(menu.bike_fall, CONFIG_BOOL));
@@ -315,6 +330,8 @@ void save_all_settings()
 	Config->SetValue("StartUP", "enable_antifreeze", std::make_unique<ConfigValue>(menu.antifreeze, CONFIG_BOOL));
 	Config->SetValue("StartUP", "enable_render.player", std::make_unique<ConfigValue>(menu.render.player, CONFIG_BOOL));
 	Config->SetValue("StartUP", "enable_render.vehicle", std::make_unique<ConfigValue>(menu.render.vehicle, CONFIG_BOOL));
+	Config->SetValue("StartUP", "enable_bottom_bar", std::make_unique<ConfigValue>(menu.bottom_bar, CONFIG_BOOL));
+	Config->SetValue("StartUP", "enable_fly_vehicle_heliMode", std::make_unique<ConfigValue>(menu.fly_vehicle_heliMode, CONFIG_BOOL));
 
 	Config->SetValue("CoordMaster", "cm_delay", std::make_unique<ConfigValue>(ini.cm_delay, CONFIG_INT));
 	Config->SetValue("CoordMaster", "cm_dist", std::make_unique<ConfigValue>(ini.cm_dist, CONFIG_FLOAT));

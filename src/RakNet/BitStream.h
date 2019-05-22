@@ -711,7 +711,7 @@ inline bool BitStream::Read(bool &var)
 	if ( readOffset + 1 > numberOfBitsUsed )
 		return false;
 
-	if ( data[ readOffset >> 3 ] & ( 0x80 >> ( readOffset++ % 8 ) ) )   // Is it faster to just write it out here?
+	if ( data[ readOffset >> 3 ] & ( 0x80 >> ( readOffset++ % 8 ) ) )   // Is it faster to just write it out here? //-V567
 		var = true;
 	else
 		var = false;

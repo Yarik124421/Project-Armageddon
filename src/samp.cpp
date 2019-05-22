@@ -545,7 +545,7 @@ CVector *stSAMPPed::getBonePos(uint8_t bBoneID)
 
 inline bool stVehiclePool::isBadVehicle(int iVehicleID)
 {
-	if (iVehicleID < 0 || iVehicleID > SAMP_MAX_VEHICLES)  return true;
+	if (iVehicleID < 0 || iVehicleID >= SAMP_MAX_VEHICLES)  return true;
 	if (!iInitiated || iIsListed[iVehicleID] != 1) return true;
 	if (pSAMP_Vehicle[iVehicleID] == NULL || pGTA_Vehicle[iVehicleID] == NULL) 
 		return true;
@@ -638,6 +638,28 @@ int stVehiclePool::findNearestEmptyVehicle(float fRadius)
 		dist = vecBetwen.Length();
 	}
 	
+	return nearest;
+}
+int stVehiclePool::findNearestDriverVehicle(float fRadius)
+{
+	int nearest = -1; float dist = 1000.0f;
+
+	for (int i = 0; i < SAMP_MAX_VEHICLES; i++)
+	{
+		if (isBadVehicle(i) || pSAMP_Vehicle[i]->pGTA_Vehicle == NULL) continue;
+		if (pCRMP->getPlayers()->pLocalPlayer->sCurrentVehicleID == i) continue;
+
+		struct vehicle_info* vinfo = getGTAVehicle(i);
+		if (isBadPtr_GTA_pVehicle(vinfo) || vinfo->driver == NULL) continue;
+
+		CVector vecBetwen(vinfo->base.m_CMatrix->vPos - *pPedSelf->GetPosition());
+
+		if (vecBetwen.Length() > dist) continue;
+
+		nearest = i;
+		dist = vecBetwen.Length();
+	}
+
 	return nearest;
 }
 

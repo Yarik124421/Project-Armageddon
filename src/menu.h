@@ -84,6 +84,7 @@ struct cheats
 	bool coordmaster;
 	bool cm_menu;
 	bool fakeafk;
+	bool bottom_bar;
 	
 	bool antifreeze;
 	bool pulsecolor;
@@ -127,6 +128,9 @@ struct cheats
 	bool pizda;
 	bool rollcrasher;
 	bool tr_lock;
+	bool car_remote_control;
+	bool car_with_driver;
+	bool car_pizdilka;
 	struct render 
 	{
 		bool pickup;
@@ -136,6 +140,21 @@ struct cheats
 		bool labels;
 	};
 	struct render render;
+	struct cards
+	{
+		bool durak;
+		bool isfirst;
+		bool nocards;
+		bool dropped[36];
+		bool myhand[36];
+		bool ontable[36];
+	};
+	struct cards cards;
+	bool fly_on;
+	bool fly_enabled;
+	bool fly_active;
+	bool fly_vehicle_heliMode;
+	bool vehfly;
 };
  
 

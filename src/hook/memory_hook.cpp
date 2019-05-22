@@ -8,6 +8,7 @@
 #include <iostream>
 #include <string>
 
+
 //bool reconnected;
 void HandleRPCPacketFunc(uint8_t uniqueID, RPCParameters *rpcParams, void(*callback) (RPCParameters *))
 {
@@ -15,8 +16,23 @@ void HandleRPCPacketFunc(uint8_t uniqueID, RPCParameters *rpcParams, void(*callb
 	{
 		BitStream	bsData(rpcParams->input, rpcParams->numberOfBitsOfData / 8, false);
 
-		//Log("uniqueID: %d | %s", uniqueID, RpcEnumeration[uniqueID]);
+		Log("uniqueID: %d | %s", uniqueID, RpcEnumeration[uniqueID]);
+		bsData.ResetReadPointer();
+		char keks[256];
+		if ((const int)(rpcParams->numberOfBitsOfData / 8) < 256 / 8)
+		{
+			bsData.Read(keks, (const int)(rpcParams->numberOfBitsOfData / 8));
+		}
+		else
+		{
+			bsData.Read(keks, 255/8);
+			
+		}
+		Log(keks);
 
+		bsData.ResetReadPointer();
+		
+		
 		if (uniqueID == RPC_ClientMessage)
 		{
 			uint32_t		dwStrLen, dwColor;
@@ -74,10 +90,45 @@ void HandleRPCPacketFunc(uint8_t uniqueID, RPCParameters *rpcParams, void(*callb
 
 			}
 
-			/*string outstr = szMsg;
-			Log(outstr.c_str());
-			if (outstr.substr(0, 13) == "Администратор" && dwColor == 4284696490)
-				Info(outstr.c_str());*/
+			if (menu.cards.durak && strstr(szMsg, "[Игра]"))
+			{
+				pCRMP->getChat()->addMessageToChat(dwColor, "DEBUG COLOR: %d", dwColor);
+
+				if (strstr(szMsg, "отбился."))
+					for (int i = 0; i < 36; i++)
+					{
+						if (menu.cards.ontable[i])
+							menu.cards.dropped[i] = true;
+						menu.cards.ontable[i] = false;
+						menu.cards.myhand[i] = false;
+					}
+				else if (strstr(szMsg, "затянул,"))
+					for (int i = 0; i < 36; i++)
+					{
+						menu.cards.ontable[i] = false;
+						menu.cards.myhand[i] = false;
+					}
+				else if (strstr(szMsg, "в колоде закончились."))
+					menu.cards.nocards = true;
+				else if (strstr(szMsg, "Игра закончена!"))
+				{
+					menu.cards.durak = false;
+					menu.cards.isfirst = false;
+					menu.cards.nocards = false;
+					for (int i = 0; i < 36; i++)
+					{
+						menu.cards.dropped[i] = false;
+						menu.cards.myhand[i] = false;
+						menu.cards.ontable[i] = false;
+					}
+
+				}
+			}
+
+			//string outstr = szMsg;
+			///Log(outstr.c_str());
+			//if (outstr.substr(0, 13) == "Администратор" && dwColor == 4284696490)
+			//	Info(outstr.c_str());
 		}
 
 		if (uniqueID == RPC_ClearAnimations)
@@ -145,6 +196,7 @@ void HandleRPCPacketFunc(uint8_t uniqueID, RPCParameters *rpcParams, void(*callb
 				}
 			}
 		}
+		
 	}
 
 	

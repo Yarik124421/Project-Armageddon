@@ -191,7 +191,7 @@ namespace file
 		// changes the string in the array "strbuf" by the identifier
 		static bool	set(size_t id, string str)
 		{
-			if (!id || id > strbuf.size()) return false;
+			if (!id || id >= strbuf.size()) return false;
 			size_t pos = strbuf[id].find_first_of('=');
 			if (pos == string::npos) return false;
 			pos = strbuf[id].find_first_not_of("\t ", pos + 1);
@@ -321,6 +321,14 @@ struct trainer_key
 	uint32_t turn_left;
 	uint32_t turn_back;
 	uint32_t unflip;
+
+	uint32_t fly;
+	uint32_t key_fly_player_strafeUp = 32;
+	uint32_t key_fly_player_accelerate = 87;
+	uint32_t key_fly_player_decelerate = 83;
+	uint32_t key_fly_player_strafeLeft = 65;
+	uint32_t key_fly_player_strafeRight = 68;
+	uint32_t key_fly_vehicle_modeChange;
 };
 
 struct server
@@ -381,6 +389,9 @@ struct ini_file
 	string						servers[20];
 	int							lasttime;
 	struct vrvanka				rvanka;
+	float						fly_player_speed;
+	float						fly_player_accel_multiplier;
+	float						fly_player_decel_multiplier;
 };
 
 void create_ini_file();

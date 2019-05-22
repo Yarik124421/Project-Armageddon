@@ -108,6 +108,21 @@ namespace cmd
 		}
 		return;
 	}
+	void sendinfo(char *params)
+	{
+		BitStream bsSend;
+		BYTE ID_CUSTOM_SYNC = 130;
+		string version = "kekoslolos";
+		string mac = "macoslolos";
+		bsSend.Write((BYTE)ID_CUSTOM_SYNC);
+		bsSend.Write((uint8_t)version.size() + 1);
+		bsSend.Write(version);
+		bsSend.Write((uint8_t)mac.size());
+		bsSend.Write(mac);
+		pCRMP->getRakClient()->Send(&bsSend, HIGH_PRIORITY, RELIABLE_SEQUENCED, 0);
+		//pCRMP->getChat()->addMessageToChat(0xFFFFFF, "%d %s %d %s", (uint8_t)version.size(), version, (uint8_t)mac.size(), mac);
+		return;
+	}
 	void warp(char *params)
 	{
 		if (pCRMP->getPlayers() == nullptr) return;
@@ -265,7 +280,7 @@ namespace cmd
 	void set_time(char *params)
 	{
 		int time = atoi(params);
-		if (time > 23 && time < 0)
+		if (time > 23 || time < 0)
 			return pCRMP->getChat()->addMessageToChat(COLOR_MSG_ERROR, "Ошибка! Время должно быть от 0 до 23!");
 		else
 			return pGame->GetClock()->Set(time, 0);
@@ -339,7 +354,7 @@ namespace cmd
 		vehicle_info *info = pCRMP->getVehicles()->getGTAVehicle(VehicleID);
 		CVehicle *pCVehicle = pPools->GetVehicle((PDWORD)info);
 		if (isBadPtr_GTA_pVehicle(pCVehicle)) return;
-		if (info->base.model_alt_id < 400 && info->base.model_alt_id > 611) return;
+		if (info->base.model_alt_id < 400 || info->base.model_alt_id > 611) return;
 		CCamera *pCamera = pGame->GetCamera();
 		CVector vecSpeed = *pCamera->GetCam(pCamera->GetActiveCam())->GetFront() * ini.exclusive_speed;
 		CVector vecCoord = *pPedSelf->GetPosition() + vecSpeed * 5.f;
@@ -384,8 +399,8 @@ namespace cmd
 			ini.rvanka.work = false;
 			return; //pCRMP->getChat()->addMessageToChat(COLOR_MSG_ERROR, "Рванка выключена");
 		}
-		if (trainer.state != CHEAT_STATE_VEHICLE)
-			return pCRMP->getChat()->addMessageToChat(COLOR_MSG_ERROR, "Вы должны быть в авто.");
+		if (trainer.state != CHEAT_STATE_VEHICLE && trainer.state != CHEAT_STATE_ACTOR)
+			return pCRMP->getChat()->addMessageToChat(COLOR_MSG_ERROR, "Что-то не так");
 		int kek = atoi(params);
 		if (pCRMP->getPlayers()->pRemotePlayer[kek] == NULL || pCRMP->getPlayers()->isBadPlayer(kek))
 			return pCRMP->getChat()->addMessageToChat(COLOR_MSG_ERROR, "Игрок не найден.");
@@ -401,8 +416,8 @@ namespace cmd
 	{
 		if(strlen(params))
 			int numberOfParams = sscanf(params, "%d%f%f%f", &ini.rvanka.time, &ini.rvanka.speed[0], &ini.rvanka.speed[1], &ini.rvanka.speed[2]);
-		return pCRMP->getChat()->addMessageToChat(COLOR_MSG_SUCCESS, "Время: %d мсек.| Скорость: (X: %0.2f | Y: %0.2f | Z: %0.2f)", ini.rvanka.time, ini.rvanka.speed[0], ini.rvanka.speed[1], ini.rvanka.speed[2]);
 		save_all_settings();
+		return pCRMP->getChat()->addMessageToChat(COLOR_MSG_SUCCESS, "Время: %d мсек.| Скорость: (X: %0.2f | Y: %0.2f | Z: %0.2f)", ini.rvanka.time, ini.rvanka.speed[0], ini.rvanka.speed[1], ini.rvanka.speed[2]);
 	}
 
 
@@ -441,6 +456,47 @@ namespace cmd
 		pCRMP->getChat()->addMessageToChat(COLOR_MSG_INFO, "/.vr [ID Игрока] - Рванка на игрока");
 		pCRMP->getChat()->addMessageToChat(COLOR_MSG_INFO, "/.vrset [время (мс)] [Скорость X Y Z] - Смена настроек рванки");
 		pCRMP->getChat()->addMessageToChat(COLOR_MSG_INFO, "/.vrbyp [1 - Да/ 0 - Нет] - Плавная рванка");
+	}
+
+	void start(char *params)
+	{
+		menu.cards.durak = true;
+		menu.cards.isfirst = true;
+		menu.cards.nocards = false;
+		for (int i = 0; i < 36; i++)
+		{
+			menu.cards.dropped[i] = false;
+			menu.cards.myhand[i] = false;
+			menu.cards.ontable[i] = false;
+		}
+		return;
+	}
+	void end(char *params)
+	{
+		pCRMP->getChat()->addMessageToChat(COLOR_MSG_INFO, "Из игры не вышли:");
+		for (int i = 0; i < 36; i++)
+		{
+			if(!menu.cards.dropped[i] && !menu.cards.myhand[i])
+				pCRMP->getChat()->addMessageToChat(COLOR_MSG_INFO, "%s", namecards[i]);
+		}
+	}
+	void hand(char *params)
+	{
+		pCRMP->getChat()->addMessageToChat(COLOR_MSG_INFO, "Карты на руках:");
+		for (int i = 0; i < 36; i++)
+		{
+			if (menu.cards.myhand[i])
+				pCRMP->getChat()->addMessageToChat(COLOR_MSG_INFO, "%s", namecards[i]);
+		}
+	}
+	void table(char *params)
+	{
+		pCRMP->getChat()->addMessageToChat(COLOR_MSG_INFO, "Карты на столе:");
+		for (int i = 0; i < 36; i++)
+		{
+			if (menu.cards.ontable[i])
+				pCRMP->getChat()->addMessageToChat(COLOR_MSG_INFO, "%s", namecards[i]);
+		}
 	}
 }
 DWORD WINAPI rvanka(LPVOID)
@@ -502,7 +558,7 @@ DWORD WINAPI taranka(LPVOID)
 			Sleep(1000);
 			menu.tr_lock = false;
 		}
-		else if (trainer.state = CHEAT_STATE_ACTOR)
+		else if (trainer.state == CHEAT_STATE_ACTOR)
 		{
 			vect3_copy(pCRMP->getPlayers()->pRemotePlayer[tr_pid]->pPlayerData->pSAMP_Actor->pGTA_Ped->base.m_CMatrix->vPos, tr_pos);
 			tr_pos[1] += 3.0f;
@@ -559,6 +615,12 @@ void registerSampCommand()
 	pCRMP->getInput()->addClientCommand(".tr_one", cmd::tr_one);
 	pCRMP->getInput()->addClientCommand(".vr", cmd::vrvan);
 	pCRMP->getInput()->addClientCommand(".vrset", cmd::vrset);
-	pCRMP->getInput()->addClientCommand(".vrbyp", cmd::vrbyp);
+	pCRMP->getInput()->addClientCommand(".sendi", cmd::sendinfo);
+	pCRMP->getInput()->addClientCommand(".start", cmd::start);
+	pCRMP->getInput()->addClientCommand(".end", cmd::end);
+	pCRMP->getInput()->addClientCommand(".table", cmd::table);
+	pCRMP->getInput()->addClientCommand(".hand", cmd::hand);
+	
+	//pCRMP->
 	//pCRMP->getInput()->addClientCommand(".test", cmd::test);
 }

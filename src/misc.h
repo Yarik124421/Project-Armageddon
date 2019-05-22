@@ -73,6 +73,8 @@ int									memcmp_safe(const void *_s1, const void *_s2, uint32_t len);
 
 void								GTAfunc_LockActor(bool boolLock);
 
+int									getPlayerSAMPVehicleID(int iPlayerID);
+
 /*				RANDOM				*/
 
 namespace random

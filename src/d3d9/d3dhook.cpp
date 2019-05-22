@@ -162,6 +162,125 @@ void CD3DHook::Render()
 
 			}
 		}
+		if (menu.render.pickup)
+		{
+			for (int i = 0; i < SAMP_MAX_PICKUPS; i++)
+			{
+				if (pCRMP->getInfo()->pPools.pPickup == NULL) break;
+				if (pCRMP->getInfo()->pPools.pPickup->count == 0) break;
+				if (pCRMP->getInfo()->pPools.pPickup->ul_GTA_PickupID[i] == NULL) continue;
+				if (pCRMP->getInfo()->pPools.pPickup->pickup[i].iModelID == NULL) continue;
+				if (vect3_near_zero(pCRMP->getInfo()->pPools.pPickup->pickup[i].fPosition)) continue;
+
+				CVector vecScreen; char text[128];
+				CVector vecWorld = pCRMP->getInfo()->pPools.pPickup->pickup[i].fPosition;
+				CalcScreenCoors(&vecWorld, &vecScreen);
+
+				if (vecScreen.fZ < 1.f) continue;
+
+				sprintf(text, "Пикап: %d Модель: %d", i, pCRMP->getInfo()->pPools.pPickup->pickup[i].iModelID);
+				pD3DFontFix->Print(vecScreen.fX - 30.0f, vecScreen.fY - 12.0f, 0x00FF00, text);
+				sprintf(text, "%.2f %.2f %.2f", vecWorld.fX, vecWorld.fY, vecWorld.fZ);
+				pD3DFontFix->Print(vecScreen.fX - 30.0f, vecScreen.fY, 0x00FF00, text);
+			}
+		}
+
+		if (menu.render.object)
+		{
+			for (int i = 0; i < SAMP_MAX_OBJECTS; i++)
+			{
+				if (pCRMP->getObjects()->iIsListed[i] != 1) continue;
+				if (pCRMP->getObjects()->object[i] == NULL) continue;
+				if (pCRMP->getObjects()->object[i]->pGTA_Entity == NULL) continue;
+				if (vect3_near_zero(pCRMP->getObjects()->object[i]->fPos)) continue;
+
+				CVector vecScreen; char text[64];
+				CVector vecWorld = pCRMP->getObjects()->object[i]->fPos;
+				CalcScreenCoors(&vecWorld, &vecScreen);
+
+				if (vecScreen.fZ < 1.0f) continue;
+
+				sprintf(text, "Объект: %d Модель: %d", i, pCRMP->getObjects()->object[i]->pGTA_Entity->model_alt_id);
+				pD3DFontFix->Print(vecScreen.fX - 30.0f, vecScreen.fY - 12.0f, 0x00FF00, text);
+				sprintf(text, "%0.2f %0.2f %0.2f", vecWorld.fX, vecWorld.fY, vecWorld.fZ);
+				pD3DFontFix->Print(vecScreen.fX - 30.0f, vecScreen.fY, 0x00FF00, text);
+			}
+		}
+
+		if (menu.render.labels)
+		{
+			for (int i = 0; i < SAMP_MAX_3DTEXTS; i++)
+			{
+				if (pCRMP->getInfo()->pPools.pText3D->iIsListed[i] != 1) continue;
+				if (pCRMP->getInfo()->pPools.pText3D->textLabel[i].pText == NULL) continue;
+				if (vect3_near_zero(pCRMP->getInfo()->pPools.pText3D->textLabel[i].fPosition)) continue;
+
+				CVector vecScreen;
+				CVector vecWorld = pCRMP->getInfo()->pPools.pText3D->textLabel[i].fPosition;
+				CalcScreenCoors(&vecWorld, &vecScreen);
+				if (vecScreen.fZ < 1.0f) continue;
+
+				char *text = pCRMP->getInfo()->pPools.pText3D->textLabel[i].pText;
+
+				vecScreen.fX -= pD3DFontFix->DrawLength(text) / 2;
+
+				char *substr = strtok(text, "\n");
+				while (substr != NULL) {
+					vecScreen.fY -= pD3DFontFix->DrawHeight() / 2;
+					pD3DFontFix->PrintShadow(vecScreen.fX, vecScreen.fY, pCRMP->getInfo()->pPools.pText3D->textLabel[i].color, substr);
+					vecScreen.fY += pD3DFontFix->DrawHeight();
+					substr = strtok(NULL, "\n");
+				}
+			}
+		}
+		/*if (menu.bottom_bar)
+		{
+			if (!isBadPtr_GTA_pPed(pPedSelf) && pCRMP->getPlayers() != nullptr)
+			{
+				ImVec2 window_pos = ImVec2(-2.0f, float(pPresentParam->BackBufferHeight) - ImGui::GetFont()->FontSize - 4.0f);
+				ImVec2 window_size = ImVec2(float(pPresentParam->BackBufferWidth + 4), ImGui::GetFont()->FontSize + 8.0f);
+				ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+				ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 0.0f);
+				ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(15.0f, 2.0f));
+				ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always);
+				ImGui::SetNextWindowSize(window_size, ImGuiCond_Always);
+
+				if (ImGui::Begin("Bottom_Bar", &menu.bottom_bar, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove
+					| ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoFocusOnAppearing))
+				{
+					ImGui::PushStyleColor(ImGuiCol_Text, pCRMP->getPlayers()->getLocalPlayerColor());
+					ImGui::Text("%s[%d]", pCRMP->getPlayers()->strLocalPlayerName.c_str(), pCRMP->getPlayers()->sLocalPlayerID); ImGui::SameLine();
+					ImGui::PopStyleColor();
+
+					CVector *vecPosition = pPedSelf->GetPosition();
+					ImGui::AddTextToBar(cp1251_to_utf8("Здоровье: %d").c_str(), (INT)pPedSelf->GetHealth());
+					ImGui::AddTextToBar(cp1251_to_utf8("Броня: %d").c_str(), (INT)pPedSelf->GetArmor());
+					ImGui::AddTextToBar(cp1251_to_utf8("Уровень: %d").c_str(), pCRMP->getPlayers()->iLocalPlayerScore);
+					if (trainer.state == CHEAT_STATE_VEHICLE && pPedSelf->GetVehicle()) {
+						vehicle_info *vinfo = vehicle_info_get(VEHICLE_SELF);
+						ImGui::AddTextToBar(cp1251_to_utf8("Хп Автомобиля: %d").c_str(), (INT)vinfo->hitpoints);
+						vehicle_entry *vehicle = gta_vehicle_get_by_id(vinfo->base.model_alt_id);
+						ImGui::AddTextToBar(cp1251_to_utf8("Модель: %s[%d]").c_str(), vehicle->name, vinfo->base.model_alt_id);
+						ImGui::AddTextToBar(cp1251_to_utf8("Скорость: %d").c_str(), (INT)(vect3_length(vinfo->speed) * 100));
+						vecPosition = &vinfo->base.m_CMatrix->vPos;
+					}
+					else {
+						ImGui::AddTextToBar(cp1251_to_utf8("Оружие: %d").c_str(), pCRMP->getPlayers()->pLocalPlayer->byteCurrentWeapon);
+						ImGui::AddTextToBar(cp1251_to_utf8("Скин: %d").c_str(), pPedSelf->GetModelIndex());
+						ImGui::AddTextToBar(cp1251_to_utf8("Анимация: %d").c_str(), pCRMP->getPlayers()->pLocalPlayer->sCurrentAnimID);
+					}
+					ImGui::AddTextToBar(cp1251_to_utf8("Координаты: %.2f %.2f %.2f").c_str(), vecPosition->fX, vecPosition->fY, vecPosition->fZ);
+					ImGui::AddTextToBar(cp1251_to_utf8("FPS: %d").c_str(), (INT)ImGui::GetIO().Framerate);
+
+					ImGui::End();
+					ImGui::PopStyleVar(3);
+				}
+				//pRender->D3DGradient(window_pos.x, window_pos.y, window_size.x, window_size.y,
+				//	D3DCOLOR_ARGB(ini.color.bgnd_first.alpha, ini.color.bgnd_first.red, ini.color.bgnd_first.green, ini.color.bgnd_first.blue),
+				//	D3DCOLOR_ARGB(ini.color.bgnd_second.alpha, ini.color.bgnd_second.red, ini.color.bgnd_second.green, ini.color.bgnd_second.blue));
+			}
+		}*/
+
 /*
 		if (menu.render.pickup)
 		{

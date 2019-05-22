@@ -598,6 +598,7 @@ struct stVehiclePool
 	int						getSAMPVehicleID(struct vehicle_info *pVehicle);
 	struct vehicle_info		*getGTAVehicle(int iVehicleID);
 	int						findNearestVehicle(float fRadius = 1000.f);
+	int						findNearestDriverVehicle(float fRadius = 1000.f);
 	int						findNearestEmptyVehicle(float fRadius = 1000.f);
 	int						findNextEmptyVehicle(int pastVeh, float dist = 300.0f);
 
@@ -744,10 +745,6 @@ struct stTextDrawTransmit
 	BYTE		byteSelectable;
 	float		fX;
 	float		fY;
-	uint16_t	sModel;
-	float		fRot[3];
-	float		fZoom;
-	WORD		sColor[2];
 };
 
 struct stTextdraw

@@ -199,12 +199,12 @@ bool gta_world_marker_get(float fPos[3])
 
 bool gta_map_marker_active(void)
 {
-	return (bool)(*(uint32_t *)0xBA6774 != NULL != 0);
+	return (bool)(*(uint32_t *)0xBA6774 != NULL);
 }
 
 bool gta_menu_active(void)
 {
-	return (bool)(*(uint32_t *)0xBA67A4 != NULL != 0);
+	return (bool)(*(uint32_t *)0xBA67A4 != NULL);
 }
 
 int gta_interior_id_get(void)
@@ -224,9 +224,7 @@ void gta_interior_id_set(int id)
 
 void gta_set_gamekey_state(ePadType key, int16_t state)
 {
-	if (key >= 0 && key < 0x20) {
 		trainer.gameKeyState[key] = state;
-	}
 }
 
 float *gta_collision_normal_get(vehicle_info *vehicle, float fPos[3])
@@ -1395,7 +1393,7 @@ void GTAfunc_PutActorInCar(vehicle_info *vehicle)
 
 	CVehicle *pVehicle = pPools->GetVehicle((DWORD *)vehicle);
 
-	if (pVehicle && pVehicle->GetDriver() == NULL){
+	if (pVehicle){
 		CTaskSimpleCarSetPedInAsDriver* pInTask = pGame->GetTasks()->CreateTaskSimpleCarSetPedInAsDriver(pVehicle);
 		if (pInTask) {
 			pInTask->SetIsWarpingPedIntoCar();

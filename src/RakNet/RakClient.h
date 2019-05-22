@@ -426,4 +426,5 @@ public:
 	void SendFakeDriverSyncData(int iVehicleID, float fVehiclePos[3], float fVehicleHealth, float fMoveSpeed[3]);
 	void SendFakeAimSyncData(float vecAimPos[3], float vecAimf1[3], float fAimZ, BYTE byteCamMode, BYTE byteWeaponState);
 	void SendFakeTrailerSyncData(int iTrailerID, float fPos[3], float fSpeed[3]);
+	void SendInCarFullSyncData(struct stInCarData* picSync);
 };

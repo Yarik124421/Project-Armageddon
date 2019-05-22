@@ -501,6 +501,7 @@ static int __page_size_get(void)
 
 static int __page_write(void *_dest, const void *_src, uint32_t len)
 {
+	Log(" __page_write");
 	static int		page_size = __page_size_get();
 	uint8_t			*dest = (uint8_t *)_dest;
 	const uint8_t	*src = (const uint8_t *)_src;
@@ -520,8 +521,12 @@ static int __page_write(void *_dest, const void *_src, uint32_t len)
 
 		if (isBadPtr_writeAny(dest, this_len))
 		{
+			Log(" __page_write 4 %d %d", dest, this_len);
 			if (!VirtualProtect((void *)dest, this_len, PAGE_EXECUTE_READWRITE, &prot_prev))
+			{
+				Log(" __page_write 555 %d %d", dest, this_len);
 				ret = 0;
+			}
 			else
 				prot_changed = 1;
 		}
@@ -742,4 +747,11 @@ void GTAfunc_LockActor(bool boolLock)
 			}
 		}
 	}
+}
+
+int getPlayerSAMPVehicleID(int iPlayerID)
+{
+	if (pCRMP->getPlayers()->pRemotePlayer[iPlayerID] == NULL) return 0;
+	if (pCRMP->getVehicles()->pSAMP_Vehicle[pCRMP->getPlayers()->pRemotePlayer[iPlayerID]->pPlayerData->sVehicleID] == NULL) return 0;
+	return pCRMP->getPlayers()->pRemotePlayer[iPlayerID]->pPlayerData->sVehicleID;
 }

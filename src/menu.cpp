@@ -194,8 +194,24 @@ void ImGui_Menu_Draw()
 			Config->Save(szIniFileName);
 		}
 		ImGui::Spacing();
-		if (ImGui::CollapsingHeader(cp1251_to_utf8("Свежак :)").c_str()))
+		if (ImGui::CollapsingHeader(cp1251_to_utf8("Свежак").c_str()))
 		{
+			ImGui::Text(cp1251_to_utf8("Ярик водила").c_str());
+			ImGui::Separator();
+			ImGui::Checkbox(cp1251_to_utf8("Начать").c_str(), &menu.car_remote_control);
+			ImGui::Checkbox(cp1251_to_utf8("С водилой").c_str(), &menu.car_with_driver);
+			ImGui::Checkbox(cp1251_to_utf8("Управлять чужим авто").c_str(), &menu.car_pizdilka);
+		}
+		ImGui::Spacing();
+		if (ImGui::CollapsingHeader(cp1251_to_utf8("Эксклюзив").c_str()))
+		{
+			ImGui::Separator();
+			if (ImGui::Button(cp1251_to_utf8("Респануть все машины(OLD)").c_str(), ImVec2(fItemWidth, 15.f))) ImGui_SpawnCars();
+			if (ImGui::Button(cp1251_to_utf8("Удалить все машины").c_str(), ImVec2(fItemWidth, 15.f))) ImGui_NewSpawnCars();
+			ImGui::Checkbox(cp1251_to_utf8("Удалить все машины v2").c_str(), &menu.cardeleter);
+			ImGui::Checkbox(cp1251_to_utf8("Удалить все машины v3").c_str(), &menu.carunocdeleter);
+			ImGui::Checkbox(cp1251_to_utf8("Таскалка авто").c_str(), &menu.pick_car);
+			ImGui::Checkbox(cp1251_to_utf8("OnFoot Crasher(OLD)").c_str(), &menu.playercrasher);
 			ImGui::Checkbox(cp1251_to_utf8("Обход каршота").c_str(), &menu.carshotbypass);
 			ImGui::Checkbox(cp1251_to_utf8("Фэйк АФК").c_str(), &menu.fakeafk);
 			ImGui::Checkbox(cp1251_to_utf8("Крашер с ног").c_str(), &menu.rollcrasher);
@@ -207,6 +223,8 @@ void ImGui_Menu_Draw()
 			if (ImGui::Button(cp1251_to_utf8("Сменить способ стрельбы на I").c_str())) ini.exclusive_method = 0;
 			if (ImGui::Button(cp1251_to_utf8("Сменить способ стрельбы на II").c_str())) ini.exclusive_method = 1;
 			if (ImGui::Button(cp1251_to_utf8("Сменить способ стрельбы на III").c_str())) ini.exclusive_method = 2;
+
+			ImGui::Separator();
 
 		}
 		ImGui::Spacing();
@@ -242,9 +260,9 @@ void ImGui_Menu_Draw()
 			ImGui::Separator();
 			ImGui::Checkbox(cp1251_to_utf8("Отрисовка игроков").c_str(), &menu.render.player);
 			ImGui::Checkbox(cp1251_to_utf8("Отрисовка автомобилей").c_str(), &menu.render.vehicle);
-			//ImGui::Checkbox(cp1251_to_utf8("Отрисовка пикапов").c_str(), &menu.render.pickup);
-			//ImGui::Checkbox(cp1251_to_utf8("Отрисовка объектов").c_str(), &menu.render.object);
-			//ImGui::Checkbox(cp1251_to_utf8("Отрисовка 3D лейблов").c_str(), &menu.render.labels);
+			ImGui::Checkbox(cp1251_to_utf8("Отрисовка пикапов").c_str(), &menu.render.pickup);
+			ImGui::Checkbox(cp1251_to_utf8("Отрисовка объектов").c_str(), &menu.render.object);
+			ImGui::Checkbox(cp1251_to_utf8("Отрисовка 3D лейблов").c_str(), &menu.render.labels);
 			ImGui::Separator();
 		}
 		ImGui::Spacing();
@@ -282,20 +300,6 @@ void ImGui_Menu_Draw()
 			ImGui::Checkbox(cp1251_to_utf8("Банихоп").c_str(), &menu.banyhop);
 
 			ImGui::Separator();
-		}
-		ImGui::Spacing();
-		if (ImGui::CollapsingHeader(cp1251_to_utf8("Эксклюзив (OLD)").c_str()))
-		{
-			ImGui::Separator();
-			if (ImGui::Button(cp1251_to_utf8("Респануть все машины(OLD)").c_str(), ImVec2(fItemWidth, 15.f))) ImGui_SpawnCars();
-			if (ImGui::Button(cp1251_to_utf8("Удалить все машины").c_str(), ImVec2(fItemWidth, 15.f))) ImGui_NewSpawnCars();
-			ImGui::Checkbox(cp1251_to_utf8("Удалить все машины v2").c_str(), &menu.cardeleter);
-			ImGui::Checkbox(cp1251_to_utf8("Удалить все машины v3").c_str(), &menu.carunocdeleter);
-			ImGui::Checkbox(cp1251_to_utf8("Таскалка авто").c_str(), &menu.pick_car);
-			ImGui::Checkbox(cp1251_to_utf8("OnFoot Crasher(OLD)").c_str(), &menu.playercrasher);
-
-			ImGui::Separator();
-
 		}
 		ImGui::Spacing();
 		if (ImGui::CollapsingHeader(cp1251_to_utf8("Патчи").c_str()))
@@ -351,6 +355,8 @@ void ImGui_Menu_Draw()
 			ImGui::Checkbox(cp1251_to_utf8("Быстрый коннект").c_str(), &menu.fast_connect);
 			ImGui::Checkbox(cp1251_to_utf8("Сохранять прицеп").c_str(), &menu.keep_trailer);
 			ImGui::Checkbox(cp1251_to_utf8("FPS Unlimiter").c_str(), &menu.fps_unlimiter);
+			ImGui::Checkbox(cp1251_to_utf8("Нижний бар").c_str(), &menu.bottom_bar);
+			ImGui::Checkbox(cp1251_to_utf8("Летать как вертолет(авто)").c_str(), &menu.fly_vehicle_heliMode);
 
 
 			ImGui::Separator();

@@ -362,7 +362,7 @@ HRESULT CD3DFont::Print(float x, float y, DWORD color, const std::string strText
 
 	const char *szText = strText.data();
 
-	if (szText && *szText)
+	if (*szText)
 	{
 		UINT		usedTriangles = 0;
 		d3dvertex_s *pVertex;

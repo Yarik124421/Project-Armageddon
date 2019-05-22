@@ -70,7 +70,7 @@ public:
 		Matrix.vFront = vFront;
 		Matrix.vRight = vRight;
 
-		return Matrix;
+		return Matrix; //-V558
 	}
 };
 
